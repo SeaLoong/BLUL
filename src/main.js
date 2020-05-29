@@ -1,32 +1,29 @@
 /* global RESOURCE */
 'use strict';
-
 if (typeof unsafeWindow !== 'undefined') {
   const safeWindow = window;
-  // eslint-disable-next-line no-global-assign
-  window = unsafeWindow;
-  window.close = safeWindow.close;
-  window.focus = safeWindow.focus;
+  window = unsafeWindow; // eslint-disable-line no-global-assign
   window.safeWindow = safeWindow;
 }
-
-const BLUL = {
+const BLUL = window.BLUL = {
+  debug: () => {},
   NAME: 'BLUL',
   ENVIRONMENT: GM.info.scriptHandler,
   ENVIRONMENT_VERSION: GM.info.version,
   VERSION: GM.info.script.version,
   RESOURCE: RESOURCE,
   INFO: {},
+  load: undefined,
   onupgrade: [],
   onpreinit: [],
   oninit: [],
   onpostinit: [],
-  onrun: [],
-  debug: () => {}
+  onrun: []
 };
-
-(async () => {
-  if (await GM.getValue('DEBUG')) {
+// 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
+BLUL.load = async (options) => {
+  const { debug, slient, local, loadInSpecial, unique, login } = options;
+  if (await debug) {
     localStorage.setItem('videoVolume', 0);
     window.top.BLUL = BLUL;
     BLUL.GM = GM;
@@ -37,44 +34,48 @@ const BLUL = {
   await checkResetResource(); // eslint-disable-line no-undef
 
   // 特殊直播间页面，如 6 55 76
-  if (document.getElementById('player-ctnr')) return;
+  if (!loadInSpecial && document.getElementById('player-ctnr')) return true;
 
-  const importModule = isLocalResource() ? createImportModuleFromGMFunc([BLUL, GM]) : createImportModuleFromResourceFunc([BLUL, GM]); // eslint-disable-line no-undef
+  const importModule = (local ?? isLocalResource()) ? createImportModuleFromGMFunc([BLUL, GM]) : createImportModuleFromResourceFunc([BLUL, GM]); // eslint-disable-line no-undef
 
   await importModule('jquery');
   await importModule('Toast');
 
-  const mark = 'running';
-  // 检查重复运行
-  if (await (async () => {
-    const running = parseInt(await GM.getValue(mark) ?? 0);
-    const ts = Date.now();
-    return (ts - running >= 0 && ts - running <= 15e3);
-  })()) {
-    BLUL.Toast.warn('已经有其他页面正在运行脚本了哟~');
-    return;
+  if (unique) {
+    const mark = 'running';
+    // 检查重复运行
+    if (await (async () => {
+      const running = parseInt(await GM.getValue(mark) ?? 0);
+      const ts = Date.now();
+      return (ts - running >= 0 && ts - running <= 15e3);
+    })()) {
+      if (!slient) {
+        BLUL.Toast.warn('已经有其他页面正在运行脚本了哟~');
+      }
+      return false;
+    }
+    // 标记运行中
+    await GM.setValue(mark, Date.now());
+    const uniqueCheckInterval = setInterval(async () => {
+      await GM.setValue(mark, Date.now());
+    }, 10e3);
+    window.addEventListener('unload', async () => {
+      clearInterval(uniqueCheckInterval);
+      await GM.deleteValue(mark);
+    });
   }
   await importModule('lodash');
   const Util = BLUL.Util = await importModule('Util');
 
-  BLUL.INFO.UID = Util.getCookie('DedeUserID');
-  BLUL.INFO.CSRF = Util.getCookie('bili_jct');
-
-  if (!BLUL.INFO.UID || !BLUL.INFO.CSRF) {
-    BLUL.Toast.warn('你还没有登录呢~');
-    return;
+  if (login) {
+    BLUL.INFO.CSRF = Util.getCookie('bili_jct');
+    if (!BLUL.INFO.CSRF) {
+      if (!slient) {
+        BLUL.Toast.warn('你还没有登录呢~');
+      }
+      return false;
+    }
   }
-
-  // 标记运行中
-  await GM.setValue(mark, Date.now());
-  const uniqueCheckInterval = setInterval(async () => {
-    await GM.setValue(mark, Date.now());
-  }, 10e3);
-  window.addEventListener('unload', async () => {
-    clearInterval(uniqueCheckInterval);
-    await GM.deleteValue(mark);
-  });
-
   await importModule('Dialog');
 
   /*
@@ -90,22 +91,20 @@ const BLUL = {
   await importModule('Logger');
   await importModule('Config');
   await importModule('Request');
-  await importModule('Sign');
-  await importModule('Exchange');
 
   /* eslint-disable no-undef */
   BLUL.onpreinit.push(preinitImport);
   BLUL.oninit.push(initImport);
   /* eslint-enable no-undef */
 
-  console.log('GlobalScope:', Util.getGlobalScope());
+  await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
 
-  await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver);
-
+  BLUL.INFO.UID = window.BilibiliLive.UID;
   BLUL.INFO.ROOMID = window.BilibiliLive.ROOMID;
   BLUL.INFO.ANCHOR_UID = window.BilibiliLive.ANCHOR_UID;
   BLUL.INFO.SHORT_ROOMID = window.BilibiliLive.SHORT_ROOMID;
   BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
+  BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也自行请求获取
 
   if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
     await Util.callEachAndWait(BLUL.onupgrade, BLUL, BLUL, GM);
@@ -115,14 +114,5 @@ const BLUL = {
   await Util.callEachAndWait(BLUL.oninit, BLUL, BLUL, GM);
   await Util.callEachAndWait(BLUL.onpostinit, BLUL, BLUL, GM);
   await Util.callEachAndWait(BLUL.onrun, BLUL, BLUL, GM);
-
-  /*
-  const url = Util.codeToURL(`importScripts('${RESOURCE.import}');RESOURCE.BASE += '/worker';importScripts('${RESOURCE.Worker}');`);
-  console.log(url);
-  const worker = new Worker(url);
-  worker.onerror = e => console.error('main worker', e);
-  worker.onmessage = e => console.log('main worker', e);
-  worker.postMessage('main worker init');
-  console.log(worker);
-  */
-})();
+  return true;
+};

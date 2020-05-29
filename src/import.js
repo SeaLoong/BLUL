@@ -125,13 +125,10 @@ async function initImport (BLUL) {
     await BLUL.Config.reset('resource');
     await GM.deleteValue('resetResource');
   }
-  BLUL.Config.onload.push(loadImport);
-}
-
-function loadImport (BLUL) {
-  if (isLocalResource()) return;
-  RESOURCE.base = BLUL.Config.get('resource.base');
-  for (const name of ['jquery', 'toastr', 'lodash']) {
-    RESOURCE[name] = BLUL.Config.get(`resource.${name}`);
-  }
+  BLUL.Config.onload.push(() => {
+    RESOURCE.base = BLUL.Config.get('resource.base');
+    for (const name of ['jquery', 'toastr', 'lodash']) {
+      RESOURCE[name] = BLUL.Config.get(`resource.${name}`);
+    }
+  });
 }
