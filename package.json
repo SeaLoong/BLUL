@@ -1,0 +1,28 @@
+{
+  "name": "blul",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  },
+  "author": "SeaLoong",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.10.1",
+    "@babel/core": "^7.10.1",
+    "babel-eslint": "^10.1.0",
+    "semistandard": "^14.2.0"
+  },
+  "semistandard": {
+    "parser": "babel-eslint",
+    "env": {
+      "browser": true,
+      "es2020": true,
+      "worker": true,
+      "jquery": true,
+      "greasemonkey": true
+    },
+    "ignore": ["/dist/*"],
+    "global": ["$"]
+  }
+}
