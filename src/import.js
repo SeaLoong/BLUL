@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 const RESOURCE = {
-  base: undefined,
+  base: '',
   blulBase: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
   lodash: 'https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js',
   toastr: 'https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js',

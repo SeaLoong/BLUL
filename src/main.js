@@ -20,7 +20,7 @@ const BLUL = window.BLUL = {
   onrun: []
 };
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
-BLUL.load = async (options) => {
+BLUL.preload = async (options) => {
   const { debug, slient, local, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
   if (await debug) {
     localStorage.setItem('videoVolume', 0);
@@ -30,7 +30,13 @@ BLUL.load = async (options) => {
     BLUL.debug(BLUL);
   }
 
-  if (local ?? isLocalResource()) await checkResetResource(); // eslint-disable-line no-undef
+  /* eslint-disable no-undef */
+  if (!(local ?? isLocalResource())) {
+    await checkResetResource();
+    BLUL.onpreinit.push(preinitImport);
+    BLUL.oninit.push(initImport);
+  }
+  /* eslint-enable no-undef */
 
   // 特殊直播间页面，如 6 55 76
   if (!loadInSpecial && document.getElementById('player-ctnr')) return true;
@@ -93,13 +99,11 @@ BLUL.load = async (options) => {
   await importModule('Config');
   await importModule('Request');
 
-  /* eslint-disable no-undef */
-  if (!(local ?? isLocalResource())) {
-    BLUL.onpreinit.push(preinitImport);
-    BLUL.oninit.push(initImport);
-  }
-  /* eslint-enable no-undef */
+  return true;
+};
 
+BLUL.load = async () => {
+  const Util = BLUL.Util;
   await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
 
   BLUL.INFO.UID = window.BilibiliLive.UID;
@@ -119,5 +123,3 @@ BLUL.load = async (options) => {
   await Util.callEachAndWait(BLUL.onrun, BLUL.load, BLUL, GM);
   return true;
 };
-
-// BLUL.load({ debug: true, slient: false, local: false, loadInSpecial: false, unique: true, login: false });
