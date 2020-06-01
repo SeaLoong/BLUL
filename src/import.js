@@ -1,14 +1,17 @@
 /* eslint-disable no-unused-vars */
 const RESOURCE = {
-  base: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
+  base: undefined,
+  blulBase: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
   lodash: 'https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js',
   toastr: 'https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js',
   jquery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js'
 };
-RESOURCE.import = RESOURCE.base + '/import.js';
-RESOURCE.Worker = RESOURCE.base + '/worker/main.js';
 
-const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+const BLUL_MODULES_NAME = ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request'];
+for (const key in RESOURCE) {
+  if (key === 'base' || key === 'blulBase') continue;
+  BLUL_MODULES_NAME.push(RESOURCE[key]);
+}
 
 function createImportModuleFunc (context, keepContext = false) {
   /**
@@ -36,7 +39,7 @@ function createImportModuleFunc (context, keepContext = false) {
 function createImportModuleFromResourceFunc (context, keepContext = false) {
   const rawImportModule = createImportModuleFunc(context, true);
   async function importModule (name, reImport) {
-    return rawImportModule(RESOURCE[name] ?? (RESOURCE.base + '/modules/' + name.toLowerCase() + '.js'), reImport);
+    return rawImportModule(RESOURCE[name] ?? ((BLUL_MODULES_NAME.includes(name) ? RESOURCE.blulBase : (RESOURCE.base ?? RESOURCE.blulBase)) + '/modules/' + name.toLowerCase() + '.js'), reImport);
   }
   if (!keepContext) context.unshift(importModule);
   return importModule;
@@ -105,7 +108,7 @@ async function checkResetResource () {
 
 function preinitImport (BLUL) {
   BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', title: '该设置项只在非本地模式下有效', help: '此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
-  BLUL.Config.addItem('resource.base', 'BLUL根目录', RESOURCE.base, {
+  BLUL.Config.addItem('resource.blulBase', 'BLUL根目录', RESOURCE.blulBase, {
     tag: 'input',
     help: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src<br>https://raw.githubusercontent.com/SeaLoong/BLUL/master/src',
     corrector: v => {
@@ -130,7 +133,7 @@ async function initImport (BLUL) {
     await GM.deleteValue('resetResource');
   }
   BLUL.Config.onload.push(() => {
-    RESOURCE.base = BLUL.Config.get('resource.base');
+    RESOURCE.blulBase = BLUL.Config.get('resource.blulBase');
     for (const name of ['jquery', 'toastr', 'lodash']) {
       RESOURCE[name] = BLUL.Config.get(`resource.${name}`);
     }
