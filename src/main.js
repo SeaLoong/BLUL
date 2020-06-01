@@ -120,4 +120,4 @@ BLUL.load = async (options) => {
   return true;
 };
 
-BLUL.load({ debug: true, slient: false, local: false, loadInSpecial: false, unique: true, login: false });
+// BLUL.load({ debug: true, slient: false, local: false, loadInSpecial: false, unique: true, login: false });
