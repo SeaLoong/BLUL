@@ -129,7 +129,7 @@ function preinitImport (BLUL) {
 
 async function initImport (BLUL) {
   if (await GM.getValue('resetResource')) {
-    await BLUL.Config.reset('resource');
+    await BLUL.Config.reset('resource', true);
     await GM.deleteValue('resetResource');
   }
   BLUL.Config.onload.push(() => {

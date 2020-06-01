@@ -358,7 +358,7 @@ export default async function (importModule, BLUL, GM) {
       dialog.addButton('确定', () => dialog.close(true));
       dialog.addButton('取消', () => dialog.close(false), 1);
       if (await dialog.show()) {
-        await reset();
+        await reset('', true);
         window.location.reload(true);
       }
     };
