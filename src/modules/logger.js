@@ -38,8 +38,8 @@ export default async function (importModule, BLUL, GM) {
       element.append(msg);
       logs.push(element);
       divLogger.append(element);
+      // 滚动到最底部
       if (keepScroll) {
-        // 滚动到最底部
         divLogger.scrollTop(divLogger.prop('scrollHeight') - divLogger.prop('clientHeight'));
       }
       if (this !== BLUL.Toast && (type === 'error' || type === 'warn')) {
@@ -87,10 +87,10 @@ export default async function (importModule, BLUL, GM) {
       keepScroll = (divLogger.scrollTop() + divLogger.prop('clientHeight') + 30 >= divLogger.prop('scrollHeight'));
     });
 
-    BLUL.Config.addObjectItem('logger', '日志设置', false);
-    BLUL.Config.addItem('logger.showDateTime', '显示日期时间', config.showDateTime);
-    BLUL.Config.addItem('logger.maxLog', '日志上限', config.maxLog, { help: '最多显示多少条日志，数值过大可能会导致性能问题' });
-    BLUL.Config.addItem('logger.outputConsole', '同时输出到控制台', config.outputConsole);
+    BLUL.Config.addItem('logger', '日志设置', false, { tag: 'input', attribute: { type: 'checkbox' } });
+    BLUL.Config.addItem('logger.showDateTime', '显示日期时间', config.showDateTime, { tag: 'input', attribute: { type: 'checkbox' } });
+    BLUL.Config.addItem('logger.maxLog', '日志上限', config.maxLog, { tag: 'input', help: '最多显示多少条日志，数值过大可能会导致性能问题', attribute: { type: 'number', min: 10, max: 10000, step: 100 } });
+    BLUL.Config.addItem('logger.outputConsole', '同时输出到控制台', config.outputConsole, { tag: 'input', attribute: { type: 'checkbox' } });
 
     BLUL.Config.onload.push(() => {
       config.showDateTime = BLUL.Config.get('logger.showDateTime');

@@ -12,6 +12,10 @@ export function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export function result (value, thisArg, ...args) {
+  return value instanceof Function ? value.apply(thisArg, args) : value;
+}
+
 export function codeToURL (code) {
   return URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
 }
@@ -24,6 +28,8 @@ export function getCookie (sKey) {
 // version1 === version2 返回0
 // version1 < version2 返回小于的数0
 export function compareVersion (version1, version2) {
+  version1 = version1 ?? '';
+  version2 = version2 ?? '';
   const v1Arr = version1.split('.');
   const v2Arr = version2.split('.');
   const n = Math.min(v1Arr.length, v2Arr.length);
@@ -63,7 +69,7 @@ export function callTomorrow (f) {
   const promise = new Promise(resolve => {
     const timeout = setTimeout(() => {
       callTomorrowMap.delete(f);
-      resolve(f.call());
+      resolve(result(f));
     }, t - Date.now());
     obj.timeout = timeout;
     obj.resolve = resolve;
@@ -78,16 +84,49 @@ export function removeCallTomorrow (f) {
   const { timeout, resolve } = callTomorrowMap.get(f);
   callTomorrowMap.delete(f);
   clearTimeout(timeout);
-  resolve.call();
+  resolve();
 }
 
-export async function callEachAndWait (funcArray, thisArg, ...args) {
-  for (const f of funcArray) {
-    await f.apply(thisArg, args);
+export function mapAndWait (array, f, thisArg) {
+  array = array ?? [];
+  f = f ?? (x => x);
+  return Promise.all(array.map(f, thisArg));
+}
+
+export async function mapKeysAndWait (object, f, thisArg) {
+  object = object ?? {};
+  f = f ?? (x => x);
+  const ret = {};
+  for (const key in object) {
+    ret[await result(f, thisArg, object[key], key, object)] = object[key];
   }
+  return ret;
+}
+
+export async function mapValuesAndWait (object, f, thisArg) {
+  object = object ?? {};
+  f = f ?? (x => x);
+  const ret = {};
+  for (const key in object) {
+    ret[key] = await result(f, thisArg, object[key], key, object);
+  }
+  return ret;
+}
+
+export function callEachAndWait (funcs, thisArg, ...args) {
+  return mapAndWait(funcs, f => f.apply?.(thisArg, args));
+}
+
+export async function callChainAndWait (funcs, thisArg, ...args) {
+  funcs = funcs ?? [];
+  for (const f of funcs) {
+    args = [await f.apply(thisArg, args)];
+  }
+  return args[0];
 }
 
 export async function callUntilTrue (f, interval = 50, thisArg, ...args) {
+  if (!(f instanceof Function)) return f;
   while (true) {
     const r = await f.apply(thisArg, args);
     if (r) return r;
@@ -105,7 +144,7 @@ export function retry (f) {
   const promise = new Promise(resolve => {
     const timeout = setTimeout(() => {
       retryMap.delete(f);
-      resolve(f.call());
+      resolve(result(f));
     }, ms);
     obj.timeout = timeout;
     obj.resolve = resolve;
@@ -122,17 +161,22 @@ export function removeRetry (f) {
   retryMap.delete(f);
   retryTimeMap.delete(f);
   clearTimeout(timeout);
-  resolve.call();
+  resolve();
 }
 
 export default {
   getGlobalScope,
   sleep,
+  result,
   codeToURL,
   getCookie,
   compareVersion,
   isToday,
   callTomorrow,
+  removeCallTomorrow,
+  mapAndWait,
+  mapKeysAndWait,
+  mapValuesAndWait,
   callEachAndWait,
   callUntilTrue,
   retry,

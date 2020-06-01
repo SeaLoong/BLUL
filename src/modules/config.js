@@ -2,34 +2,37 @@
 const NAME = '设置';
 const CONFIG = {};
 const CONFIG_DEFAULT = {};
-const nameMap = new Map();
-const helpMap = new Map();
-const onclickMap = new Map();
-const placeholderMap = new Map();
-const validatorMap = new Map();
+const optionMap = new Map();
+const innerElementMap = new Map();
+const innerOnClickMap = new Map();
 export default async function (importModule, BLUL, GM) {
+  const Util = BLUL.Util;
   const cssConfigItem = `${BLUL.NAME}-config-item`;
-  const cssConfigControlItem = `${BLUL.NAME}-config-control-item`;
+  const cssConfigGroupItem = `${BLUL.NAME}-config-group-item`;
+  const cssSelect = `${BLUL.NAME}-config-select`;
+  const cssInputButton = `${BLUL.NAME}-config-input-button`;
   const cssInputCheckbox = `${BLUL.NAME}-config-input-checkbox`;
-  const cssInputText = `${BLUL.NAME}-config-input-text`;
+  const cssInputTextbox = `${BLUL.NAME}-config-input-textbox`;
+  const cssInputSlider = `${BLUL.NAME}-config-input-slider`;
   const cssHelpButton = `${BLUL.NAME}-config-help-button`;
   await GM.addStyle(`
   .${cssConfigItem} { margin: 8px; font-size: 14px; }
-  .${cssConfigControlItem} { padding: 0 8px 4px 8px; border: 1px solid #c8c8c8; border-top: none; }
+  .${cssConfigGroupItem} { padding: 0 8px 4px 8px; border: 1px solid #c8c8c8; border-top: none; }
+  .${cssSelect} { margin: -1px 0 -1px 8px; }
+  .${cssInputButton} {  }
   .${cssInputCheckbox} { vertical-align: bottom; margin: 0 8px 0 0; height: 16px; width: 16px; }
-  .${cssInputText} { margin: -1px 0 -1px 8px; padding: 0; }
-  .${cssInputText}.text { width: 400px; }
-  .${cssInputText}.number { width: 100px; }
+  .${cssInputTextbox} { margin: -1px 0 -1px 8px; padding: 0; height: 19px; }
+  .${cssInputTextbox}.number { width: 100px; }
+  .${cssInputTextbox}.text { width: 500px; }
+  .${cssInputTextbox}.url { width: 500px; }
+  .${cssInputSlider} { width: 200px; }
   .${cssHelpButton} { margin: 0 4px; cursor: pointer; text-decoration: underline; color: #0080c6; display: inline; }
   `);
-
-  const DOMMap = new Map();
-  const innerOnClickMap = new Map();
 
   // 返回与 config 对应的一个DOM树(jQuery对象)
   const generate = async (config = CONFIG_DEFAULT, path = '') => {
     if (!path) {
-      DOMMap.clear();
+      innerElementMap.clear();
       innerOnClickMap.clear();
       const divElement = $('<div/>');
       for (const key in config) {
@@ -37,40 +40,99 @@ export default async function (importModule, BLUL, GM) {
       }
       return divElement;
     }
-    const name = nameMap.get(path);
-    let help = helpMap.get(path);
-    help = help instanceof Function ? await help() : help;
-    const onclick = onclickMap.get(path);
-    let placeholder = placeholderMap.get(path) ?? name;
-    placeholder = placeholder instanceof Function ? await placeholder() : placeholder;
+    let { tag, name, title, help, onclick, list, attribute } = optionMap.get(path);
+    tag = await Util.result(tag);
+    name = await Util.result(name) ?? path;
+    title = (await Util.result(title)) ?? name;
+    help = await Util.result(help);
+    list = await Util.result(list);
+    attribute = (await Util.mapValuesAndWait(await Util.result(attribute))) ?? {};
+    let type = attribute.type;
     const itemElement = $(`<div class="${cssConfigItem}"></div>`);
-    const labelElement = $(`<label title="${name}"></label>`);
-    let inputElement, helpElement, controlElement;
-    let rightToLeft = true;
-    switch ($.type(config)) {
-      case 'number':
-        rightToLeft = false;
-        inputElement = $(`<input type="text" class="${cssInputText} number" placeholder="${placeholder}">`);
+    const labelElement = $(`<label title="${title}"></label>`);
+    itemElement.append(labelElement);
+    let innerElement, listElement;
+    let cssStyle;
+    let rightToLeft = false;
+    switch (tag) {
+      case 'select':
+        innerElement = $('<select/>');
+        if (list) {
+          listElement = innerElement;
+        }
+        cssStyle = cssSelect;
         break;
-      case 'string':
-      case 'array':
-        rightToLeft = false;
-        inputElement = $(`<input type="text" class="${cssInputText} text" placeholder="${placeholder}">`);
-        break;
-      case 'boolean':
-        inputElement = $(`<input type="checkbox" class="${cssInputCheckbox}">`);
-        break;
-      case 'object':
-        inputElement = $(`<input type="checkbox" class="${cssInputCheckbox}">`);
-        controlElement = $(`<div class="${cssConfigControlItem}"></div>`);
-        for (const key in config) {
-          if (key.startsWith('_')) continue;
-          controlElement.append(await generate(config[key], path + '.' + key));
+      case 'input':
+        innerElement = $('<input/>');
+        attribute.list = `${BLUL.NAME}-config-datalist-${path}`;
+        if (list) {
+          listElement = $(`<datalist id="${attribute.list}"/>`);
+          itemElement.append(listElement);
+        }
+        switch (type) {
+          case 'button':
+          case 'color':
+          case 'file':
+            cssStyle = cssInputButton;
+            break;
+          case 'checkbox':
+          case 'radio':
+            cssStyle = cssInputCheckbox;
+            rightToLeft = true;
+            break;
+          case 'date':
+          case 'datetime-local':
+          case 'email':
+          case 'month':
+          case 'number':
+          case 'password':
+          case 'search':
+          case 'tel':
+          case 'text':
+          case 'time':
+          case 'url':
+          case 'week':
+            cssStyle = cssInputTextbox;
+            break;
+          case 'range':
+            cssStyle = cssInputSlider;
+            break;
+          default:
+            type = 'text';
+            cssStyle = cssInputTextbox;
         }
         break;
+      case 'button':
+        innerElement = $('<button/>');
+        cssStyle = cssInputButton;
+    }
+    if (listElement) {
+      for (const o of list) {
+        if (_.isPlainObject(o)) {
+          listElement.append($(`<option value="${o.value}">${o.text}</option>`));
+        } else {
+          listElement.append($(`<option>${o}</option>`));
+        }
+      }
+    }
+    if (innerElement) {
+      innerElement.attr(attribute);
+      innerElement.addClass(cssStyle);
+      if (type) {
+        innerElement.addClass(type);
+      }
+      if (rightToLeft) {
+        labelElement.append(innerElement);
+        labelElement.append(name);
+      } else {
+        labelElement.append(name);
+        labelElement.append(innerElement);
+      }
+    } else {
+      labelElement.append(name);
     }
     if (help) {
-      helpElement = $(`<span class="${cssHelpButton}">?</span>`);
+      const helpElement = $(`<span class="${cssHelpButton}">?</span>`);
       helpElement.click(() => {
         if (BLUL.Dialog) {
           const dialog = new BLUL.Dialog(help, '帮助');
@@ -80,63 +142,53 @@ export default async function (importModule, BLUL, GM) {
           alert(help);
         }
       });
-    }
-    itemElement.append(labelElement);
-    if (rightToLeft) {
-      labelElement.append(inputElement);
-      labelElement.append(name);
-    } else {
-      labelElement.append(name);
-      labelElement.append(inputElement);
-    }
-    if (helpElement) {
       itemElement.append(helpElement);
     }
-    const onclicks = [];
-    if (onclick instanceof Function) {
-      onclicks.push(async () => {
-        try {
-          const r = await onclick.call(inputElement, inputElement.is(':checked'));
-          if (r !== undefined && r !== null) inputElement.prop('checked', r);
-        } catch (error) {
-          BLUL.Logger.error(NAME, error);
-        }
-      });
+    let groupElement;
+    for (const key in config) {
+      if (key.startsWith('_')) continue;
+      if (!groupElement) groupElement = $(`<div class="${cssConfigGroupItem}"></div>`);
+      groupElement.append(await generate(config[key], path + '.' + key));
     }
-    if (controlElement) {
-      itemElement.append(controlElement);
-      const innerOnClick = () => {
-        if (inputElement.is(':checked')) {
-          controlElement.show();
-        } else {
-          controlElement.hide();
-        }
-      };
-      innerOnClickMap.set(inputElement, innerOnClick);
-      onclicks.push(innerOnClick);
+    if (groupElement) {
+      itemElement.append(groupElement);
     }
-    if (onclicks.length > 0) {
-      inputElement.click(async () => {
-        await BLUL.Util.callEachAndWait(onclicks, inputElement, inputElement.is(':checked'));
-      });
+    if (innerElement) {
+      const onclicks = [];
+      if (onclick instanceof Function) {
+        onclicks.push(function (...args) {
+          try {
+            return onclick.apply(this, args);
+          } catch (error) {
+            BLUL.Logger.error(NAME, error);
+          }
+        });
+      }
+      if (groupElement) {
+        const innerOnClick = checked => {
+          innerElement.prop('checked', checked);
+          if (checked) groupElement.show();
+          else groupElement.hide();
+        };
+        innerOnClickMap.set(innerElement, innerOnClick);
+        onclicks.push(innerOnClick);
+      }
+      if (onclicks.length > 0) {
+        innerElement.click(() => Util.callChainAndWait(onclicks, innerElement, innerElement.prop('checked')));
+      }
+      innerElementMap.set(path, innerElement);
     }
-    DOMMap.set(path, inputElement);
     return itemElement;
   };
 
   const get = (path) => {
-    if ($.type(_.get(CONFIG_DEFAULT, path)) === 'object') path += '._VALUE_';
-    return _.get(CONFIG, path) ?? _.get(CONFIG_DEFAULT, path);
+    return (_.get(CONFIG, path) ?? _.get(CONFIG_DEFAULT, path))?.__VALUE__;
   };
 
   const set = async (path, value) => {
-    const validator = validatorMap.get(path);
-    if (validator instanceof Function) {
-      value = validator(value);
-      while (value instanceof Promise) value = await value;
-    }
-    if ($.type(_.get(CONFIG_DEFAULT, path)) === 'object') path += '._VALUE_';
-    _.set(CONFIG, path, value);
+    const corrector = optionMap.get(path)?.corrector;
+    value = corrector instanceof Function ? await corrector(value) : value;
+    _.set(CONFIG, path + '.__VALUE__', value);
   };
 
   const onload = [];
@@ -147,20 +199,23 @@ export default async function (importModule, BLUL, GM) {
       value = {};
     }
     _.assignIn(CONFIG, value);
-    await BLUL.Util.callEachAndWait(onload, BLUL.Config, BLUL);
+    await Util.callEachAndWait(onload, BLUL.Config, BLUL);
   };
 
   const save = async () => {
     await GM.setValue('config', CONFIG);
   };
 
-  const reset = async (path = '') => {
+  const reset = async (path = '', sub = false) => {
     let config = CONFIG_DEFAULT;
     if (path) {
+      if (!sub) {
+        path += '.__VALUE__';
+      }
       _.set(CONFIG, path, _.get(CONFIG_DEFAULT, path));
       config = CONFIG;
     } else {
-      _.assignIn(CONFIG, CONFIG_DEFAULT);
+      Object.assign(CONFIG, CONFIG_DEFAULT);
     }
     await GM.setValue('config', config);
   };
@@ -173,107 +228,122 @@ export default async function (importModule, BLUL, GM) {
       }
       return ret;
     }
-    const defaultValue = _.get(CONFIG_DEFAULT, path);
-    const value = _.get(CONFIG, path);
-    const type = $.type(defaultValue);
-    if ($.type(value) !== type) {
-      _.set(CONFIG, path, defaultValue);
+    const object = _.get(CONFIG_DEFAULT, path);
+    const defaultValue = object.__VALUE__;
+    const value = _.get(CONFIG, path)?.__VALUE__;
+    if ($.type(value) !== $.type(defaultValue)) {
+      _.set(CONFIG, path + '.__VALUE__', defaultValue);
       ret = 1;
     }
-    if (type === 'object') {
-      for (const key in defaultValue) {
-        if (key.startsWith('_')) continue;
-        ret += upgrade(path + '.' + key);
-      }
+    for (const key in object) {
+      if (key.startsWith('_')) continue;
+      ret += upgrade(path + '.' + key);
     }
     return ret;
   };
 
-  const loadToContext = (path = '') => {
-    if (!path) {
-      for (const key in CONFIG_DEFAULT) {
-        loadToContext(key);
-      }
-      return;
-    }
-    const inputElement = DOMMap.get(path);
-    const defaultValue = _.get(CONFIG_DEFAULT, path);
-    const value = _.get(CONFIG, path) ?? defaultValue;
-    switch ($.type(defaultValue)) {
-      case 'number':
-      case 'string':
-        inputElement.val(value);
-        break;
-      case 'array':
-        inputElement.val(value.join(','));
-        break;
-      case 'boolean':
-        inputElement.prop('checked', value);
-        break;
-      case 'object':
-        inputElement.prop('checked', value._VALUE_);
-        innerOnClickMap.get(inputElement)?.call(inputElement); // eslint-disable-line no-unused-expressions
-        for (const key in defaultValue) {
-          if (key.startsWith('_')) continue;
-          loadToContext(path + '.' + key);
+  const loadToContext = async (path = '') => {
+    try {
+      if (!path) {
+        let ret = 0;
+        for (const key in CONFIG_DEFAULT) {
+          ret += await loadToContext(key);
         }
-        break;
+        return ret;
+      }
+      const tag = optionMap.get(path)?.tag;
+      const innerElement = innerElementMap.get(path);
+      const object = _.get(CONFIG_DEFAULT, path);
+      const defaultValue = object.__VALUE__;
+      let value = _.get(CONFIG, path)?.__VALUE__ ?? defaultValue;
+      switch ($.type(defaultValue)) {
+        case 'boolean':
+          innerElement.prop('checked', value);
+          break;
+        case 'number':
+        case 'string':
+          innerElement.val(value);
+          break;
+        case 'array':
+          if (tag !== 'select') {
+            value = value.join(',');
+          }
+          innerElement.val(value);
+          break;
+        case 'object':
+          innerElement.val(JSON.stringify(value));
+          break;
+      }
+      let ret = 0;
+      for (const key in object) {
+        if (key.startsWith('_')) continue;
+        ret += await loadToContext(path + '.' + key);
+      }
+      innerOnClickMap.get(innerElement)?.call(innerElement, value); // eslint-disable-line no-unused-expressions
+      return ret;
+    } catch (error) {
+      return 1;
     }
   };
 
   const saveFromContext = async (path = '') => {
-    if (!path) {
-      for (const key in CONFIG_DEFAULT) {
-        await saveFromContext(key);
-      }
-      return;
-    }
-    const inputElement = DOMMap.get(path);
-    const defaultValue = _.get(CONFIG_DEFAULT, path);
-    let value;
-    switch ($.type(defaultValue)) {
-      case 'string':
-        value = inputElement.val() ?? defaultValue;
-        break;
-      case 'number':
-        value = parseFloat(inputElement.val());
-        if (_.isNaN(value)) value = defaultValue;
-        break;
-      case 'boolean':
-        value = inputElement.is(':checked') ?? defaultValue;
-        break;
-      case 'array':
-        value = inputElement.val().replace?.(/(\s|\u00A0)+/, '');
-        if (value === '') value = [];
-        else value = value.split(',');
-        break;
-      case 'object':
-        value = inputElement.is(':checked') ?? defaultValue;
-        for (const key in defaultValue) {
-          if (key.startsWith('_')) continue;
-          await saveFromContext(path + '.' + key);
+    try {
+      if (!path) {
+        let ret = 0;
+        for (const key in CONFIG_DEFAULT) {
+          ret += await saveFromContext(key);
         }
-        break;
+        return ret;
+      }
+      const tag = optionMap.get(path)?.tag;
+      const innerElement = innerElementMap.get(path);
+      const object = _.get(CONFIG_DEFAULT, path);
+      const defaultValue = object.__VALUE__;
+      let value;
+      switch ($.type(defaultValue)) {
+        case 'boolean':
+          value = innerElement.prop('checked');
+          break;
+        case 'number':
+          value = parseFloat(innerElement.val());
+          break;
+        case 'string':
+          value = innerElement.val();
+          break;
+        case 'array':
+          value = innerElement.val();
+          if (tag !== 'select') {
+            value = value.replace?.(/(\s|\u00A0)+/, '').split(',');
+          }
+          break;
+        case 'object':
+          value = JSON.parse(innerElement.val());
+          break;
+      }
+      value = _.defaultTo(value, defaultValue);
+      let ret = 0;
+      for (const key in object) {
+        if (key.startsWith('_')) continue;
+        ret += await saveFromContext(path + '.' + key);
+      }
+      await set(path, value);
+      return ret;
+    } catch (error) {
+      return 1;
     }
-    await set(path, value);
+  };
+  // option = {tag, name, title, help, onclick, list, corrector, attribute: { type, disabled, min, max, step, minlength, maxlength, placeholder, pattern, ... } }
+  // attribute 会直接应用到对应input元素的属性上
+  const addItem = (path, name, defaultValue, option) => {
+    option = option ?? {};
+    option.name = name;
+    optionMap.set(path, option);
+    return _.set(CONFIG_DEFAULT, path, { __VALUE__: defaultValue });
   };
 
-  const addItem = (path, name, defaultValue, options) => {
-    _.set(CONFIG_DEFAULT, path, defaultValue);
-    const { help, onclick, placeholder, validator } = options ?? {};
-    nameMap.set(path, name);
-    helpMap.set(path, help);
-    onclickMap.set(path, onclick);
-    placeholderMap.set(path, placeholder);
-    validatorMap.set(path, validator);
-  };
-
-  const addObjectItem = (path, name, enable, options) => {
-    _.set(CONFIG_DEFAULT, path, { _VALUE_: enable });
-    const { help, onclick } = options ?? {};
-    nameMap.set(path, name);
-    helpMap.set(path, help);
-    onclickMap.set(path, onclick);
+  const removeItem = (path) => {
+    optionMap.delete(path);
+    return _.unset(CONFIG_DEFAULT, path);
   };
 
   BLUL.onpostinit.push(async () => {
@@ -285,8 +355,8 @@ export default async function (importModule, BLUL, GM) {
     }
     const btnResetClick = async () => {
       const dialog = new BLUL.Dialog('真的要恢复默认设置吗?', '提示');
-      dialog.addButton('确定', dialog.close(true));
-      dialog.addButton('取消', dialog.close(false), 1);
+      dialog.addButton('确定', () => dialog.close(true));
+      dialog.addButton('取消', () => dialog.close(false), 1);
       if (await dialog.show()) {
         await reset();
         window.location.reload(true);
@@ -295,15 +365,19 @@ export default async function (importModule, BLUL, GM) {
     const btnClick = async () => {
       const div = await generate();
       await load();
-      loadToContext();
+      if (await loadToContext()) {
+        BLUL.Logger.warn(NAME, '加载设置时出错，部分设置项未正确显示');
+      }
       const dialog = new BLUL.Dialog(div, '设置');
       dialog.addButton('确定', () => dialog.close(true));
       dialog.addButton('恢复默认设置', btnResetClick, 1);
       dialog.addButton('取消', () => dialog.close(false), 1);
       if (await dialog.show()) {
-        await saveFromContext();
+        if (await saveFromContext()) {
+          BLUL.Logger.warn(NAME, '保存设置时出错，部分设置项未正确保存');
+        }
         await save();
-        BLUL.Logger.success(NAME, '已保存');
+        BLUL.Logger.success(NAME, '保存完成');
         await load();
       }
     };
@@ -323,7 +397,7 @@ export default async function (importModule, BLUL, GM) {
     reset,
     upgrade,
     addItem,
-    addObjectItem
+    removeItem
   };
 
   BLUL.debug('Module Loaded: Config', BLUL.Config);

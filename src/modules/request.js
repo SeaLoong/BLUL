@@ -15,6 +15,7 @@ const config = {
   maxRequesting: 8
 };
 export default async function (importModule, BLUL, GM) {
+  const Util = BLUL.Util;
   const toURLSearchParamString = (search) => {
     return (search instanceof URLSearchParams ? search : new URLSearchParams(search)).toString();
   };
@@ -43,7 +44,7 @@ export default async function (importModule, BLUL, GM) {
     const responseType = details.responseType;
     // eslint-disable-next-line no-unmodified-loop-condition
     while (requesting >= config.maxRequesting) {
-      await BLUL.Util.sleep(config.interval);
+      await Util.sleep(config.interval);
     }
     return new Promise((resolve, reject) => {
       requesting++;
@@ -106,7 +107,7 @@ export default async function (importModule, BLUL, GM) {
     }
     // eslint-disable-next-line no-unmodified-loop-condition
     while (requesting >= config.maxRequesting) {
-      await BLUL.Util.sleep(config.interval);
+      await Util.sleep(config.interval);
     }
     return new Promise((resolve, reject) => {
       requesting++;
@@ -124,17 +125,19 @@ export default async function (importModule, BLUL, GM) {
   };
 
   BLUL.onpreinit.push(() => {
-    BLUL.Config.addObjectItem('request', '网络请求设置', false, {
+    BLUL.Config.addItem('request', '网络请求设置', false, {
+      tag: 'input',
       onclick: async (checked) => {
         if (!checked) return;
         const dialog = new BLUL.Dialog('除非您知道自己在做什么，否则不建议修改这项设置。确定要继续？', '警告');
         dialog.addButton('确定', () => dialog.close(true));
         dialog.addButton('取消', () => dialog.close(false), 1);
         return dialog.show();
-      }
+      },
+      attribute: { type: 'checkbox' }
     });
-    BLUL.Config.addItem('request.interval', '请求间隔', config.interval, { placeholder: '单位(ms)' });
-    BLUL.Config.addItem('request.maxRequesting', '最大并发数', config.maxRequesting);
+    BLUL.Config.addItem('request.interval', '请求间隔', config.interval, { tag: 'input', attribute: { type: 'number', placeholder: '单位(ms)', min: 1 } });
+    BLUL.Config.addItem('request.maxRequesting', '最大并发数', config.maxRequesting, { tag: 'input', attribute: { type: 'number', min: 1 } });
 
     BLUL.Config.onload.push(() => {
       config.interval = BLUL.Config.get('request.interval');

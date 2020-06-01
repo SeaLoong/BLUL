@@ -20,7 +20,7 @@ export default async function (importModule, BLUL, GM) {
   const addTopItem = (name, onselect, onclick) => {
     const item = $(`<div class="${cssTopItem} ${cssClickable}">${name}</div>`);
     itemMap.set(item.get(0), onselect);
-    if (typeof onselect === 'function') {
+    if (onselect instanceof Function) {
       item.click(function () {
         if (lastItem === this) return;
         if (lastItem) {
@@ -32,7 +32,7 @@ export default async function (importModule, BLUL, GM) {
         lastItem = this;
       });
     }
-    if (typeof onclick === 'function') {
+    if (onclick instanceof Function) {
       item.click(onclick);
     }
     headerDiv.append(item);
@@ -55,13 +55,7 @@ export default async function (importModule, BLUL, GM) {
   div.append(vm);
   vm[0].style = 'top: 20px;';
 
-  addTopItem('弹幕', (select) => {
-    if (select) {
-      vm.show();
-    } else {
-      vm.hide();
-    }
-  });
+  addTopItem('弹幕', select => select ? vm.show() : vm.hide());
 
   BLUL.Page = {
     addTopItem,

@@ -90,7 +90,6 @@ function isLocalResource () {
 }
 
 async function checkResetResource () {
-  if (isLocalResource()) return;
   // eslint-disable-next-line no-unused-expressions
   GM.registerMenuCommand?.('恢复默认源', async () => {
     await GM.setValue('resetResource', true);
@@ -100,27 +99,32 @@ async function checkResetResource () {
   const resource = (await GM.getValue('config'))?.resource;
   if (!resource) return;
   for (const key in RESOURCE) {
-    if (resource[key]) RESOURCE[key] = resource[key];
+    if (resource[key]) RESOURCE[key] = resource[key].__VALUE__;
   }
 }
 
 function preinitImport (BLUL) {
-  if (isLocalResource() || BLUL.Config) return;
-  BLUL.Config.addObjectItem('resource', '自定义源', false, { help: '该设置项只在非本地源模式下有效' });
-  BLUL.Config.addItem('resource.base', '根目录', RESOURCE.base, {
+  BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', title: '该设置项只在非本地模式下有效', help: '此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
+  BLUL.Config.addItem('resource.base', 'BLUL根目录', RESOURCE.base, {
+    tag: 'input',
     help: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src<br>https://raw.githubusercontent.com/SeaLoong/BLUL/master/src',
-    validator: v => {
+    corrector: v => {
       const i = v.trim().search(/\/+$/);
       return i > -1 ? v.substring(0, i) : v;
-    }
+    },
+    list: [
+      'http://127.0.0.1:8080/src',
+      'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
+      'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'
+    ],
+    attribute: { type: 'url' }
   });
   for (const name of ['jquery', 'toastr', 'lodash']) {
-    BLUL.Config.addItem(`resource.${name}`, name, RESOURCE[name]);
+    BLUL.Config.addItem(`resource.${name}`, name, RESOURCE[name], { tag: 'input', attribute: { type: 'url' } });
   }
 }
 
 async function initImport (BLUL) {
-  if (isLocalResource() || BLUL.Config) return;
   if (await GM.getValue('resetResource')) {
     await BLUL.Config.reset('resource');
     await GM.deleteValue('resetResource');
