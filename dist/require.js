@@ -1,36 +1,3 @@
-// ==UserScript==
-// @name         BLUL
-// @namespace    SeaLoong
-// @version      1.0.0
-// @description  Bilibili Live Userscript Library
-// @author       SeaLoong
-// @homepageURL  https://github.com/SeaLoong/BLUL
-// @supportURL   https://github.com/SeaLoong/BLUL/issues
-// @include      /^https?:\/\/live\.bilibili\.com\/\d+.*$/
-// @include      /^https?:\/\/live\.bilibili\.com\/blanc\/\d+.*$/
-// @connect      bilibili.com
-// @connect      *
-// @grant        unsafeWindow
-// @grant        GM.getValue
-// @grant        GM.setValue
-// @grant        GM.deleteValue
-// @grant        GM.listValue
-// @grant        GM.getResourceUrl
-// @grant        GM.notification
-// @grant        GM.openInTab
-// @grant        GM.setClipboard
-// @grant        GM.xmlHttpRequest
-// @grant        GM.addStyle
-// @grant        GM.addValueChangeListener
-// @grant        GM.removeValueChangeListener
-// @grant        GM.getResourceText
-// @grant        GM.registerMenuCommand
-// @grant        GM.unregisterMenuCommand
-// @run-at       document-start
-// @license      MIT License
-// @resource     toastr.css https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css
-// ==/UserScript==
-
 /* eslint-disable no-unused-vars */
 const RESOURCE = {
   base: '',
@@ -182,7 +149,9 @@ if (typeof unsafeWindow !== 'undefined') {
   window.safeWindow = safeWindow;
 }
 const BLUL = window.BLUL = {
+  isDebug: false,
   debug: () => {},
+  GM: GM,
   NAME: 'BLUL',
   ENVIRONMENT: GM.info.scriptHandler,
   ENVIRONMENT_VERSION: GM.info.version,
@@ -198,10 +167,8 @@ const BLUL = window.BLUL = {
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
 BLUL.preload = async (options) => {
   const { debug, slient, local, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
-  if (await debug) {
-    localStorage.setItem('videoVolume', 0);
-    window.top.BLUL = BLUL;
-    BLUL.GM = GM;
+  BLUL.isDebug = await debug;
+  if (BLUL.isDebug) {
     BLUL.debug = console.debug;
     BLUL.debug(BLUL);
   }
@@ -279,6 +246,9 @@ BLUL.preload = async (options) => {
 };
 
 BLUL.load = async () => {
+  if (BLUL.isDebug) {
+    window.top[BLUL.NAME] = BLUL;
+  }
   const Util = BLUL.Util;
   await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
 
