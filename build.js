@@ -14,13 +14,15 @@ function bundleRequireMeta (path) {
   let data = fs.readFileSync(path).toString();
   const metaRegExp = /\/\/\s+==UserScript==\s+[\S\s]*?\s+\/\/\s+==\/UserScript==/g;
   if (metaRegExp.test(data)) {
-    const metadata = data.slice(0, metaRegExp.lastIndex);
+    let metadata = data.slice(0, metaRegExp.lastIndex);
     const remainData = data.slice(metaRegExp.lastIndex);
     const insertData = [];
     let result;
     while ((result = metaRequireRegExp.exec(metadata))) {
+      const metaRequire = result[0];
       if (!(result = new URL(result[1]).pathname.match(srcRegExp))) continue;
       insertData.push(bundleRequireMeta('./' + result[0]));
+      metadata = metadata.replace(new RegExp(metaRequire, 'g'), '');
     }
     const nl = '\n'.repeat(2);
     data = insertData.join(nl) + nl + remainData;
