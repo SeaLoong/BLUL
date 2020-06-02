@@ -1,7 +1,7 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Node.js CI
+name: Automatic Build
 
 on:
   push:
@@ -20,6 +20,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
@@ -27,3 +30,23 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
 
+    - name: Git Auto Commit
+      uses: stefanzweifel/git-auto-commit-action@v4.3.0
+      with:
+        # Required
+        commit_message: Automatic commit the generated files
+
+        # Optional branch to push to, defaults to the current branch
+        branch: master
+
+        # Optional options appended to `git-commit`
+        commit_options: '--no-verify --signoff'
+
+        # Optional glob pattern of files which should be added to the commit
+        file_pattern: dist/*.js
+
+        # Optional local file path to the repository
+        repository: .
+
+        # Optional options appended to `git-push`
+        push_options: '--force'
