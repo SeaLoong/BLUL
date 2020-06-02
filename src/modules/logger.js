@@ -46,7 +46,7 @@ export default async function (importModule, BLUL, GM) {
         BLUL.Toast[type].call(BLUL.Logger, msg);
       }
       if (config.outputConsole || type === 'error' || type === 'warn') {
-        msg = msg.replace('<br>', ' ');
+        msg = msg.replace(/<br\/?>/g, ' ');
         console[type === 'success' ? 'log' : type].call(this, dateTime ? `[${BLUL.NAME}][${dateTime}]${msg}` : `[${dateTime}]${msg}`);
       }
     } catch (error) {

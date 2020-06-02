@@ -313,7 +313,7 @@ export default async function (importModule, BLUL, GM) {
         case 'array':
           value = innerElement.val();
           if (tag !== 'select') {
-            value = value.replace?.(/(\s|\u00A0)+/, '').split(',');
+            value = value.replace?.split(',');
           }
           break;
         case 'object':

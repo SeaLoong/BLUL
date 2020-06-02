@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "node build.js"
   },
   "author": "SeaLoong",
   "license": "MIT",
