@@ -128,7 +128,7 @@ export default async function (importModule, BLUL, GM) {
       this.dialog.remove();
       this.dialog = null;
       this.promise = null;
-      return this.resolve.apply(this, returnValues);
+      this.resolve.apply(this, returnValues);
     }
   }
 

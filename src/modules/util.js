@@ -79,7 +79,7 @@ export function callTomorrow (f) {
   return promise;
 }
 
-export function removeCallTomorrow (f) {
+export function cancelCallTomorrow (f) {
   if (!callTomorrowMap.has(f)) return;
   const { timeout, resolve } = callTomorrowMap.get(f);
   callTomorrowMap.delete(f);
@@ -155,7 +155,7 @@ export function retry (f) {
   return promise;
 }
 
-export function removeRetry (f) {
+export function cancelRetry (f) {
   if (!retryMap.has(f)) return;
   const { timeout, resolve } = retryMap.get(f);
   retryMap.delete(f);
@@ -173,12 +173,12 @@ export default {
   compareVersion,
   isToday,
   callTomorrow,
-  removeCallTomorrow,
+  cancelCallTomorrow,
   mapAndWait,
   mapKeysAndWait,
   mapValuesAndWait,
   callEachAndWait,
   callUntilTrue,
   retry,
-  removeRetry
+  cancelRetry
 };

@@ -2,7 +2,7 @@
 const NAME = '设置';
 const CONFIG = {};
 const CONFIG_DEFAULT = {};
-const optionMap = new Map();
+const optionsMap = new Map();
 const innerElementMap = new Map();
 const innerOnClickMap = new Map();
 export default async function (importModule, BLUL, GM) {
@@ -40,7 +40,7 @@ export default async function (importModule, BLUL, GM) {
       }
       return divElement;
     }
-    let { tag, name, title, help, onclick, list, attribute } = optionMap.get(path);
+    let { tag, name, title, help, onclick, list, attribute } = optionsMap.get(path);
     tag = await Util.result(tag);
     name = await Util.result(name) ?? path;
     title = (await Util.result(title)) ?? name;
@@ -186,7 +186,7 @@ export default async function (importModule, BLUL, GM) {
   };
 
   const set = async (path, value) => {
-    const corrector = optionMap.get(path)?.corrector;
+    const corrector = optionsMap.get(path)?.corrector;
     value = corrector instanceof Function ? await corrector(value) : value;
     _.set(CONFIG, path + '.__VALUE__', value);
   };
@@ -251,7 +251,7 @@ export default async function (importModule, BLUL, GM) {
         }
         return ret;
       }
-      const tag = optionMap.get(path)?.tag;
+      const tag = optionsMap.get(path)?.tag;
       const innerElement = innerElementMap.get(path);
       const object = _.get(CONFIG_DEFAULT, path);
       const defaultValue = object.__VALUE__;
@@ -295,7 +295,7 @@ export default async function (importModule, BLUL, GM) {
         }
         return ret;
       }
-      const tag = optionMap.get(path)?.tag;
+      const tag = optionsMap.get(path)?.tag;
       const innerElement = innerElementMap.get(path);
       const object = _.get(CONFIG_DEFAULT, path);
       const defaultValue = object.__VALUE__;
@@ -332,17 +332,17 @@ export default async function (importModule, BLUL, GM) {
       return 1;
     }
   };
-  // option = {tag, name, title, help, onclick, list, corrector, attribute: { type, disabled, min, max, step, minlength, maxlength, placeholder, pattern, ... } }
+  // options = {tag, name, title, help, onclick, list, corrector, attribute: { type, disabled, min, max, step, minlength, maxlength, placeholder, pattern, ... } }
   // attribute 会直接应用到对应input元素的属性上
-  const addItem = (path, name, defaultValue, option) => {
-    option = option ?? {};
-    option.name = name;
-    optionMap.set(path, option);
+  const addItem = (path, name, defaultValue, options) => {
+    options = options ?? {};
+    options.name = name;
+    optionsMap.set(path, options);
     return _.set(CONFIG_DEFAULT, path, { __VALUE__: defaultValue });
   };
 
   const removeItem = (path) => {
-    optionMap.delete(path);
+    optionsMap.delete(path);
     return _.unset(CONFIG_DEFAULT, path);
   };
 

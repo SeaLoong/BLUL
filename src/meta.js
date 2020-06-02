@@ -14,21 +14,13 @@
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @grant        GM.deleteValue
-// @grant        GM.listValue
 // @grant        GM.getResourceUrl
-// @grant        GM.notification
-// @grant        GM.openInTab
-// @grant        GM.setClipboard
 // @grant        GM.xmlHttpRequest
 // @grant        GM.addStyle
-// @grant        GM.addValueChangeListener
-// @grant        GM.removeValueChangeListener
 // @grant        GM.getResourceText
 // @grant        GM.registerMenuCommand
-// @grant        GM.unregisterMenuCommand
 // @run-at       document-start
 // @license      MIT License
 // @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/import.js
 // @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/main.js
-// @resource     toastr.css https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.css
 // ==/UserScript==

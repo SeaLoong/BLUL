@@ -6,7 +6,9 @@ if (typeof unsafeWindow !== 'undefined') {
   window.safeWindow = safeWindow;
 }
 const BLUL = window.BLUL = {
+  isDebug: false,
   debug: () => {},
+  GM: GM,
   NAME: 'BLUL',
   ENVIRONMENT: GM.info.scriptHandler,
   ENVIRONMENT_VERSION: GM.info.version,
@@ -22,10 +24,8 @@ const BLUL = window.BLUL = {
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
 BLUL.preload = async (options) => {
   const { debug, slient, local, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
-  if (await debug) {
-    localStorage.setItem('videoVolume', 0);
-    window.top.BLUL = BLUL;
-    BLUL.GM = GM;
+  BLUL.isDebug = await debug;
+  if (BLUL.isDebug) {
     BLUL.debug = console.debug;
     BLUL.debug(BLUL);
   }
@@ -103,6 +103,9 @@ BLUL.preload = async (options) => {
 };
 
 BLUL.load = async () => {
+  if (BLUL.isDebug) {
+    window.top[BLUL.NAME] = BLUL;
+  }
   const Util = BLUL.Util;
   await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
 

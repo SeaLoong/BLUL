@@ -14,18 +14,16 @@ function bundleRequireMeta (path) {
   let data = fs.readFileSync(path).toString();
   const metaRegExp = /\/\/\s+==UserScript==\s+[\S\s]*?\s+\/\/\s+==\/UserScript==/g;
   if (metaRegExp.test(data)) {
-    let metadata = data.slice(0, metaRegExp.lastIndex);
+    const metadata = data.slice(0, metaRegExp.lastIndex);
     const remainData = data.slice(metaRegExp.lastIndex);
     const insertData = [];
     let result;
     while ((result = metaRequireRegExp.exec(metadata))) {
-      const metaRequire = result[0];
       if (!(result = new URL(result[1]).pathname.match(srcRegExp))) continue;
       insertData.push(bundleRequireMeta('./' + result[0]));
-      metadata = metadata.replace(new RegExp(metaRequire, 'g'), '');
     }
     const nl = '\n'.repeat(2);
-    data = metadata + nl + insertData.join(nl) + nl + remainData;
+    data = insertData.join(nl) + nl + remainData;
   }
   cacheMap.set(path, data);
   return data;
@@ -36,4 +34,3 @@ if (!fs.existsSync('./dist')) {
 }
 
 fs.writeFileSync('./dist/require.js', bundleRequireMeta('./src/meta.js'));
-fs.writeFileSync('./dist/require.local.js', bundleRequireMeta('./src/meta.local.js'));
