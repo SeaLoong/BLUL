@@ -6,8 +6,6 @@ name: Automatic Build
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   build:
@@ -20,8 +18,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        ref: ${{ github.head_ref }}
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
@@ -34,11 +30,6 @@ jobs:
     - name: Git Auto Commit
       uses: stefanzweifel/git-auto-commit-action@v4.3.0
       with:
-        # Required
         commit_message: Automatic commit the generated files
-
-        # Optional options appended to `git-commit`
         commit_options: '--no-verify --signoff'
-
-        # Optional options appended to `git-push`
         push_options: '--force'
