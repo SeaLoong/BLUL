@@ -8,7 +8,7 @@ B站直播区用户脚本库
 
 ## **安装**
 
-在你的用户脚本元信息中加入以下 ***元信息*** ：
+在你的用户脚本元信息中加入以下 **元信息** ：
 
 ```javascript
 // @include      /^https?:\/\/live\.bilibili\.com\/\d+.*$/
@@ -27,7 +27,7 @@ B站直播区用户脚本库
 // @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/dist/require.js
 ```
 
-如果因网络不畅等原因导致不能正常加载，你可以使用 ***本地加载*** 的方式。只需要再加入以下 ***元信息*** ：
+如果因网络不畅等原因导致不能正常加载，你可以使用 **本地加载** 的方式。只需要再加入以下 **元信息** ：
 
 ```javascript
 // @resource     jquery https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js
@@ -192,15 +192,15 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **[options={}]** ***(Object)***: 选项对象
 >  
-> **[options.tag]** ***(string|Function)***: 配置项的HTML标签，一般为 `input` 、 `select` ，若参数类型为 `Function` ，则函数返回值实际参数。
+> **[options.tag]** ***(string|Function)***: 配置项的HTML标签，一般为 `input` 、 `select` ，若参数类型为 `Function` ，则函数返回值为实际参数。
 >  
-> **[options.title]** ***(string|Function)***: 配置项的 `<label>` 标签的 `title` 属性，若参数类型为 `Function` ，则函数返回值实际参数。
+> **[options.title]** ***(string|Function)***: 配置项的 [\<label\>](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/label) 标签的 `title` 属性，若参数类型为 `Function` ，则函数返回值为实际参数。
 >  
-> **[options.help]** ***(string|Function)***: 配置项的帮助说明，若参数类型为 `Function` ，则函数返回值实际参数。
+> **[options.help]** ***(string|Function)***: 配置项的帮助说明，若参数类型为 `Function` ，则函数返回值为实际参数。
 >  
 > **[options.onclick]** ***(Function)***: 配置项被点击时的回调，应当用在 *radio/checkbox* 上，其函数声明为 `async function (checked) {}` ，返回值*会*传递到下一个处理函数
 >  
-> **[options.list]** ***(Array|Function)***: 配置项的选择列表，应当用在 *select*或*类文本框* 上，若参数类型为 `Function` ，则函数返回值实际参数。
+> **[options.list]** ***(Array|Function)***: 配置项的选择列表，应当用在 *select*或*类文本框* 上，若参数类型为 `Function` ，则函数返回值为实际参数。
 >  
 > **[options.corrector]** ***(Function)***: 配置项的数值修正函数，其返回值会作为对应配置项的实际值。
 >  
@@ -370,7 +370,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 返回
 
-> ***(jQuery)***: 条目的jQuery元素。
+> ***(jQuery)***: 条目的jQuery对象。
 
 #### `BLUL.Page.addContentItem([element=''])`
 
@@ -382,7 +382,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 返回
 
-> ***(jQuery)***: 包装输入参数的jQuery元素。
+> ***(jQuery)***: 条目的jQuery对象。
 
 -----------------------------------------
 
@@ -406,11 +406,11 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **[options.data]** ***(Object)***: POST请求的传递数据。
 >  
-> **[options.*]** ***(\*)***: 剩余参数，取决于用户环境。详情 [GM.xmlHttpRequest](https://wiki.greasespot.net/GM.xmlHttpRequest) 或 **Tampermonkey/Violentmonkey** 文档 。
+> **[options.*]** ***(\*)***: 剩余参数，取决于用户环境。详情 [GM.xmlHttpRequest](https://wiki.greasespot.net/GM.xmlHttpRequest) 或 [Tampermonkey](http://www.tampermonkey.net/documentation.php#GM_xmlhttpRequest)/[Violentmonkey](https://violentmonkey.github.io/api/gm/#gm_xmlhttprequest) 文档 。
 
 + 返回
 
-> ***(类XMLHttpRequest)***: 取决于用户环境。详情 [GM.xmlHttpRequest](https://wiki.greasespot.net/GM.xmlHttpRequest) 或 **Tampermonkey/Violentmonkey** 文档 。
+> ***(类XMLHttpRequest)***: 取决于用户环境。详情 [GM.xmlHttpRequest](https://wiki.greasespot.net/GM.xmlHttpRequest) 或 [Tampermonkey](http://www.tampermonkey.net/documentation.php#GM_xmlhttpRequest)/[Violentmonkey](https://violentmonkey.github.io/api/gm/#gm_xmlhttprequest) 文档 。
 
 #### `async BLUL.Request.fetch(options)`
 
@@ -430,11 +430,11 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **[options.data]** ***(Object)***: POST请求的传递数据。
 >  
-> **[options.*]** ***(\*)***: 剩余参数。详情 [Fetch_API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API) 文档 。
+> **[options.*]** ***(\*)***: 剩余参数。详情 [fetch](https://developer.mozilla.org/zh-CN/docs/Web/API/WindowOrWorkerGlobalScope/fetch) 文档 。
 
 + 返回
 
-> ***(Response)***: 详情 [Fetch_API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)  文档 。
+> ***(Response)***: 详情 [Response](https://developer.mozilla.org/zh-CN/docs/Web/API/Response) 文档 。
 
 -----------------------------------------
 
@@ -539,6 +539,7 @@ BLUL.Config.onload(async function (BLUL) {
 + 参数
 
 > **version1** ***(string)***: 要比较的版本字符串1
+>  
 > **version2** ***(string)***: 要比较的版本字符串2
 
 + 返回
