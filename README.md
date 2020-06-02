@@ -152,7 +152,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 > **path** ***(string)***: 需要设置的配置项的路径。
 >  
-> **value** ***(*)***: 需要设置的配置项的值。
+> **value** ***(\*)***: 需要设置的配置项的值。
 
 #### `async BLUL.Config.load()`
 
@@ -188,7 +188,7 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **name** ***(string)***: 配置项的名称
 >  
-> **defaultValue** ***(*)***: 配置项的默认值
+> **defaultValue** ***(\*)***: 配置项的默认值
 >  
 > **[options={}]** ***(Object)***: 选项对象
 >  
@@ -222,7 +222,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **[content]** ***(*)***: 对话框的内容，默认为空字符串。
+> **[content]** ***(\*)***: 对话框的内容，默认为空字符串。
 >  
 > **[title]** ***(string)***: 对话框的标题，默认为 `提示`。
 
@@ -244,7 +244,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **[content]** ***(*)***: 对话框的内容，默认为空字符串。
+> **[content]** ***(\*)***: 对话框的内容，默认为空字符串。
 
 + 返回
 
@@ -294,7 +294,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 返回
 
-> ***(*)***: 对话框被关闭时提供的值。
+> ***(\*)***: 对话框被关闭时提供的值。
 
 #### `Dialog.close(...returnValues)`
 
@@ -302,7 +302,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **...returnValues** ***(*)***: 提供给 `show` 的返回值。
+> **...returnValues** ***(\*)***: 提供给 `show` 的返回值。
 
 -----------------------------------------
 
@@ -316,7 +316,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **msg** ***(*)***: 日志显示的内容。
+> **msg** ***(\*)***: 日志显示的内容。
 >  
 > **[type='success']** ***(string)***: 日志等级，可选值有 `success` `info` `warn` `error` 。默认为 `success`。
 
@@ -326,7 +326,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **...msgs** ***(*)***: 日志显示的内容，其中每个参数之间会用空格连接。
+> **...msgs** ***(\*)***: 日志显示的内容，其中每个参数之间会用空格连接。
 
 #### `BLUL.Logger.info(...msgs)`
 
@@ -334,7 +334,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **...msgs** ***(*)***: 日志显示的内容，其中每个参数之间会用空格连接。
+> **...msgs** ***(\*)***: 日志显示的内容，其中每个参数之间会用空格连接。
 
 #### `BLUL.Logger.warn(...msgs)`
 
@@ -342,7 +342,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **...msgs** ***(*)***: 日志显示的内容，其中每个参数之间会用空格连接。
+> **...msgs** ***(\*)***: 日志显示的内容，其中每个参数之间会用空格连接。
 
 #### `BLUL.Logger.error(...msgs)`
 
@@ -350,7 +350,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **...msgs** ***(*)***: 日志显示的内容，其中每个参数之间会用空格连接。
+> **...msgs** ***(\*)***: 日志显示的内容，其中每个参数之间会用空格连接。
 
 -----------------------------------------
 
@@ -378,7 +378,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **[element='']** ***(*)***: 需要被加入的元素。
+> **[element='']** ***(\*)***: 需要被加入的元素。
 
 + 返回
 
@@ -406,7 +406,7 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **[options.data]** ***(Object)***: POST请求的传递数据。
 >  
-> **[options.*]** ***(*)***: 剩余参数，取决于用户环境。详情 [GM.xmlHttpRequest](https://wiki.greasespot.net/GM.xmlHttpRequest) 或 **Tampermonkey/Violentmonkey** 文档 。
+> **[options.*]** ***(\*)***: 剩余参数，取决于用户环境。详情 [GM.xmlHttpRequest](https://wiki.greasespot.net/GM.xmlHttpRequest) 或 **Tampermonkey/Violentmonkey** 文档 。
 
 + 返回
 
@@ -430,7 +430,7 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **[options.data]** ***(Object)***: POST请求的传递数据。
 >  
-> **[options.*]** ***(*)***: 剩余参数。详情 [Fetch_API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API) 文档 。
+> **[options.*]** ***(\*)***: 剩余参数。详情 [Fetch_API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API) 文档 。
 
 + 返回
 
@@ -446,7 +446,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **...msgs** ***(*)***: 显示的内容，其中每个参数之间会用 `<br>` 连接。
+> **...msgs** ***(\*)***: 显示的内容，其中每个参数之间会用 `<br>` 连接。
 
 #### `BLUL.Toast.info(...msgs)`
 
@@ -454,7 +454,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **...msgs** ***(*)***: 显示的内容，其中每个参数之间会用 `<br>` 连接。
+> **...msgs** ***(\*)***: 显示的内容，其中每个参数之间会用 `<br>` 连接。
 
 #### `BLUL.Toast.warn(...msgs)`
 
@@ -462,7 +462,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **...msgs** ***(*)***: 显示的内容，其中每个参数之间会用 `<br>` 连接。
+> **...msgs** ***(\*)***: 显示的内容，其中每个参数之间会用 `<br>` 连接。
 
 #### `BLUL.Toast.error(...msgs)`
 
@@ -470,7 +470,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **...msgs** ***(*)***: 显示的内容，其中每个参数之间会用 `<br>` 连接。
+> **...msgs** ***(\*)***: 显示的内容，其中每个参数之间会用 `<br>` 连接。
 
 -----------------------------------------
 
@@ -498,15 +498,15 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **value** ***(*)***: 值。
+> **value** ***(\*)***: 值。
 >  
-> **[thisArg]** ***(*)***: 调用时传入的this参数。
+> **[thisArg]** ***(\*)***: 调用时传入的this参数。
 >  
-> **[...args]** ***(*)***: 调用时传入的参数。
+> **[...args]** ***(\*)***: 调用时传入的参数。
 
 + 返回
 
-> ***(*)***: `value` 本身或调用后的结果。
+> ***(\*)***: `value` 本身或调用后的结果。
 
 #### `BLUL.Util.codeToURL(code)`
 
@@ -587,7 +587,7 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **f** ***(Function)***: 要执行的函数，其函数声明为 `async function (element, index, array) {}`
 >  
-> **[thisArg]** ***(*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数
 
 + 返回
 
@@ -603,7 +603,7 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **f** ***(Function)***: 要执行的函数，其函数声明为 `async function (value, key, object) {}`
 >  
-> **[thisArg]** ***(*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数
 
 + 返回
 
@@ -619,7 +619,7 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **f** ***(Function)***: 要执行的函数，其函数声明为 `async function (value, key, object) {}`
 >  
-> **[thisArg]** ***(*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数
 
 + 返回
 
@@ -633,9 +633,9 @@ BLUL.Config.onload(async function (BLUL) {
 
 > **funcs** ***(Array)***: 函数数组
 >  
-> **[thisArg]** ***(*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数
 >  
-> **[...args]** ***(*)***: 调用时传入的参数
+> **[...args]** ***(\*)***: 调用时传入的参数
 
 + 返回
 
@@ -649,9 +649,9 @@ BLUL.Config.onload(async function (BLUL) {
 
 > **funcs** ***(Array)***: 函数数组
 >  
-> **[thisArg]** ***(*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数
 >  
-> **[...args]** ***(*)***: 调用时传入的参数
+> **[...args]** ***(\*)***: 调用时传入的参数
 
 + 返回
 
@@ -665,15 +665,15 @@ BLUL.Config.onload(async function (BLUL) {
 
 > **f** ***(Function)***: 要执行的函数
 >  
-> **[interval=50]** ***(*)***: 调用等待间隔，默认50ms
+> **[interval=50]** ***(\*)***: 调用等待间隔，默认50ms
 >  
-> **[thisArg]** ***(*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数
 >  
-> **[...args]** ***(*)***: 调用时传入的参数
+> **[...args]** ***(\*)***: 调用时传入的参数
 
 + 返回
 
-> ***(*)***: 调用函数返回的结果
+> ***(\*)***: 调用函数返回的结果
 
 #### `BLUL.Util.retry(f)`
 
