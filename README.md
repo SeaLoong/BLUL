@@ -546,6 +546,18 @@ BLUL.Config.onload(async function (BLUL) {
 
 > ***(number)***: 比较的结果：version1 > version2 返回大于的数0；version1 === version2 返回0；version1 < version2 返回小于的数0。
 
+#### `BLUL.Util.inOneDay(ts)`
+
+判断给定的时间戳是不是在当前时间的前一日到当前时间之间。
+
++ 参数
+
+> **ts** ***(number)***: 时间戳
+
++ 返回
+
+> ***(boolean)***: 判断的结果
+
 #### `BLUL.Util.isToday(ts)`
 
 判断给定的时间戳是不是在当日，以UTC+8为标准（经过时区修正）。

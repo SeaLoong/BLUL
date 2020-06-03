@@ -45,6 +45,10 @@ export function compareVersion (version1, version2) {
   return v1Arr.length - v2Arr.length;
 }
 
+export function inOneDay (ts) {
+  return (Date.now() - ts < 86400e3);
+}
+
 export function isToday (ts) {
   const d = new Date();
   const offset = d.getTimezoneOffset() + 480;
@@ -170,6 +174,7 @@ export default {
   codeToURL,
   getCookie,
   compareVersion,
+  inOneDay,
   isToday,
   callAtTime,
   cancelCallAtTime,
