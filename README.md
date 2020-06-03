@@ -558,21 +558,31 @@ BLUL.Config.onload(async function (BLUL) {
 
 > ***(boolean)***: 判断的结果
 
-#### `BLUL.Util.callTomorrow(f)`
+#### `BLUL.Util.callAtTime(f, [hours=0], [min=1], [sec=0], [ms=0])`
 
-次日执行给定的函数，以UTC+8为标准（经过时区修正）。
+在指定的时间（与日期无关）执行给定的函数，以UTC+8为标准（经过时区修正）。
+
+在下一次到达指定的时间时执行，因此可能会在当天或次日执行。
 
 + 参数
 
 > **f** ***(Function)***: 待执行的函数
+>  
+> **[hours=0]** ***(number)***: 小时
+>  
+> **[min=1]** ***(number)***: 分钟
+>  
+> **[sec=0]** ***(number)***: 秒
+>  
+> **[ms=0]** ***(number)***: 毫秒
 
 + 返回
 
 > ***(Promise)***: 等待过程的Promise
 
-#### `BLUL.Util.cancelCallTomorrow(f)`
+#### `BLUL.Util.cancelCallAtTime(f)`
 
-取消次日执行给定的函数。
+取消在指定的时间执行给定的函数。
 
 + 参数
 

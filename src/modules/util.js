@@ -55,34 +55,33 @@ export function isToday (ts) {
   return (d - t < 86400e3);
 }
 
-const callTomorrowMap = new Map();
+const callAtTimeMap = new Map();
 
-export function callTomorrow (f) {
-  if (callTomorrowMap.has(f)) return callTomorrowMap.get(f).promise;
+export function callAtTime (f, h = 0, min = 1, s = 0, ms = 0) {
+  if (callAtTimeMap.has(f)) return callAtTimeMap.get(f).promise;
   const t = new Date();
-  const offset = t.getTimezoneOffset() + 480;
-  t.setMinutes(t.getMinutes() + offset);
-  t.setDate(t.getDate() + 1);
-  t.setHours(0, 1, 0, 0);
-  t.setMinutes(t.getMinutes() - offset);
+  t.setHours(h, min + t.getTimezoneOffset() + 480, s, ms);
+  if (t < Date.now()) {
+    t.setDate(t.getDate() + 1);
+  }
   const obj = {};
   const promise = new Promise(resolve => {
     const timeout = setTimeout(() => {
-      callTomorrowMap.delete(f);
+      callAtTimeMap.delete(f);
       resolve(result(f));
     }, t - Date.now());
     obj.timeout = timeout;
     obj.resolve = resolve;
   });
   obj.promise = promise;
-  callTomorrowMap.set(f, obj);
+  callAtTimeMap.set(f, obj);
   return promise;
 }
 
-export function cancelCallTomorrow (f) {
-  if (!callTomorrowMap.has(f)) return;
-  const { timeout, resolve } = callTomorrowMap.get(f);
-  callTomorrowMap.delete(f);
+export function cancelCallAtTime (f) {
+  if (!callAtTimeMap.has(f)) return;
+  const { timeout, resolve } = callAtTimeMap.get(f);
+  callAtTimeMap.delete(f);
   clearTimeout(timeout);
   resolve();
 }
@@ -172,8 +171,8 @@ export default {
   getCookie,
   compareVersion,
   isToday,
-  callTomorrow,
-  cancelCallTomorrow,
+  callAtTime,
+  cancelCallAtTime,
   mapAndWait,
   mapKeysAndWait,
   mapValuesAndWait,
