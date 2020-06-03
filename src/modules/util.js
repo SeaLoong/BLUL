@@ -45,8 +45,8 @@ export function compareVersion (version1, version2) {
   return v1Arr.length - v2Arr.length;
 }
 
-export function inOneDay (ts) {
-  return (Date.now() - ts < 86400e3);
+export function beforeNow (ts, range = 86400e3, offset = 60e3) {
+  return (Date.now() - ts < range - offset);
 }
 
 export function isToday (ts) {
@@ -174,7 +174,7 @@ export default {
   codeToURL,
   getCookie,
   compareVersion,
-  inOneDay,
+  beforeNow,
   isToday,
   callAtTime,
   cancelCallAtTime,

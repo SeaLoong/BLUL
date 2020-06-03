@@ -546,13 +546,17 @@ BLUL.Config.onload(async function (BLUL) {
 
 > ***(number)***: 比较的结果：version1 > version2 返回大于的数0；version1 === version2 返回0；version1 < version2 返回小于的数0。
 
-#### `BLUL.Util.inOneDay(ts)`
+#### `BLUL.Util.beforeNow(ts, [range=86400e3], [offset=60e3])`
 
-判断给定的时间戳是不是在当前时间的前一日到当前时间之间。
+判断给定的时间戳是不是在当前时间的前一段时间到当前时间之间，为了方便使用，实际用于判断的时间减去了offset。
 
 + 参数
 
 > **ts** ***(number)***: 时间戳
+>  
+> **[range=86400e3]** ***(number)***: 时间范围，默认为1天，单位毫秒
+>  
+> **[offset=60e3]** ***(number)***: 允许的时间误差，默认为1分钟，单位毫秒
 
 + 返回
 
