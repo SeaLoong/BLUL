@@ -19,7 +19,7 @@ export default async function (importModule, BLUL, GM) {
 
   let divLogger;
 
-  const dateTimeFormat = new Intl.DateTimeFormat('zh', { dateStyle: 'short', timeStyle: 'long', hour12: false });
+  const dateTimeFormat = new Intl.DateTimeFormat('zh-CN-u-hc-h23', { dateStyle: 'short', timeStyle: 'medium' });
 
   const logs = [];
   let keepScroll = true;
