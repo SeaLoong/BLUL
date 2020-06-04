@@ -31,9 +31,9 @@ BLUL.preload = async (options) => {
   /* eslint-disable no-undef */
   if (!(local ?? isLocalResource())) {
     await checkResetResource();
-    BLUL.onpreinit.push(preinitImport);
-    BLUL.oninit.push(initImport);
   }
+  BLUL.onpreinit.push(preinitImport);
+  BLUL.oninit.push(initImport);
   /* eslint-enable no-undef */
 
   // 特殊直播间页面，如 6 55 76
