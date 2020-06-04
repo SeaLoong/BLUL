@@ -108,23 +108,10 @@ async function checkResetResource () {
 
 function preinitImport (BLUL) {
   BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', title: '该设置项只在非本地模式下有效', help: '此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
-  BLUL.Config.addItem('resource.blulBase', 'BLUL根目录', RESOURCE.blulBase, {
-    tag: 'input',
-    help: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src<br>https://raw.githubusercontent.com/SeaLoong/BLUL/master/src',
-    corrector: v => {
-      const i = v.trim().search(/\/+$/);
-      return i > -1 ? v.substring(0, i) : v;
-    },
-    list: [
-      'http://127.0.0.1:8080/src',
-      'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
-      'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'
-    ],
-    attribute: { type: 'url' }
-  });
-  for (const name of ['jquery', 'toastr', 'lodash']) {
-    BLUL.Config.addItem(`resource.${name}`, name, RESOURCE[name], { tag: 'input', attribute: { type: 'url' } });
-  }
+  BLUL.addResource('blulBase', [RESOURCE.blulBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
+  BLUL.addResource('lodash', [RESOURCE.lodash, 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js', 'https://raw.githubusercontent.com/lodash/lodash/4.17.15/dist/lodash.js']);
+  BLUL.addResource('toastr', [RESOURCE.toastr, 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
+  BLUL.addResource('jquery', [RESOURCE.jquery, 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
 }
 
 async function initImport (BLUL) {
@@ -132,16 +119,10 @@ async function initImport (BLUL) {
     await BLUL.Config.reset('resource', true);
     await GM.deleteValue('resetResource');
   }
-  BLUL.Config.onload.push(() => {
-    RESOURCE.blulBase = BLUL.Config.get('resource.blulBase');
-    for (const name of ['jquery', 'toastr', 'lodash']) {
-      RESOURCE[name] = BLUL.Config.get(`resource.${name}`);
-    }
-  });
 }
 
 
-/* global RESOURCE */
+/* global RESOURCE, _ */
 'use strict';
 if (typeof unsafeWindow !== 'undefined') {
   const safeWindow = window;
@@ -149,7 +130,6 @@ if (typeof unsafeWindow !== 'undefined') {
   window.safeWindow = safeWindow;
 }
 const BLUL = window.BLUL = {
-  isDebug: false,
   debug: () => {},
   GM: GM,
   NAME: 'BLUL',
@@ -167,8 +147,7 @@ const BLUL = window.BLUL = {
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
 BLUL.preload = async (options) => {
   const { debug, slient, local, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
-  BLUL.isDebug = await debug;
-  if (BLUL.isDebug) {
+  if (debug) {
     BLUL.debug = console.debug;
     BLUL.debug(BLUL);
   }
@@ -242,31 +221,49 @@ BLUL.preload = async (options) => {
   await importModule('Config');
   await importModule('Request');
 
-  return true;
-};
+  BLUL.addResource = (name, urls, displayName) => {
+    const url = urls instanceof Array ? urls[0] : urls;
+    BLUL.RESOURCE[name] = url;
+    BLUL.Config.addItem(`resource.${name}`, displayName ?? name, url, {
+      tag: 'input',
+      list: urls instanceof Array ? urls : undefined,
+      corrector: v => {
+        const i = v.trim().search(/\/+$/);
+        return i > -1 ? v.substring(0, i) : v;
+      },
+      attribute: { type: 'url' }
+    });
+    BLUL.Config.onload.push(() => {
+      BLUL.RESOURCE[name] = BLUL.Config.get(`resource.${name}`);
+    });
+  };
 
-BLUL.load = async () => {
-  if (BLUL.isDebug) {
-    window.top[BLUL.NAME] = BLUL;
-  }
-  const Util = BLUL.Util;
-  await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
+  BLUL.setBase = _.once(urls => BLUL.addResource('base', urls, '根目录'));
 
-  BLUL.INFO.UID = window.BilibiliLive.UID;
-  BLUL.INFO.ROOMID = window.BilibiliLive.ROOMID;
-  BLUL.INFO.ANCHOR_UID = window.BilibiliLive.ANCHOR_UID;
-  BLUL.INFO.SHORT_ROOMID = window.BilibiliLive.SHORT_ROOMID;
-  BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
-  BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也自行请求获取
+  BLUL.load = _.once(async () => {
+    if (debug) {
+      window.top[BLUL.NAME] = BLUL;
+    }
+    await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
 
-  if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
-    await Util.callEachAndWait(BLUL.onupgrade, BLUL.load, BLUL, GM);
-    await GM.setValue('version', BLUL.VERSION);
-  }
-  await Util.callEachAndWait(BLUL.onpreinit, BLUL.load, BLUL, GM);
-  await Util.callEachAndWait(BLUL.oninit, BLUL.load, BLUL, GM);
-  await Util.callEachAndWait(BLUL.onpostinit, BLUL.load, BLUL, GM);
-  await Util.callEachAndWait(BLUL.onrun, BLUL.load, BLUL, GM);
+    BLUL.INFO.UID = window.BilibiliLive.UID;
+    BLUL.INFO.ROOMID = window.BilibiliLive.ROOMID;
+    BLUL.INFO.ANCHOR_UID = window.BilibiliLive.ANCHOR_UID;
+    BLUL.INFO.SHORT_ROOMID = window.BilibiliLive.SHORT_ROOMID;
+    BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
+    BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也自行请求获取
+
+    if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
+      await Util.callEachAndWait(BLUL.onupgrade, BLUL.load, BLUL, GM);
+      await GM.setValue('version', BLUL.VERSION);
+    }
+    await Util.callEachAndWait(BLUL.onpreinit, BLUL.preload, BLUL, GM);
+    await Util.callEachAndWait(BLUL.oninit, BLUL.load, BLUL, GM);
+    await Util.callEachAndWait(BLUL.onpostinit, BLUL.load, BLUL, GM);
+    await Util.callEachAndWait(BLUL.onrun, BLUL.load, BLUL, GM);
+    return true;
+  });
+
   return true;
 };
 
