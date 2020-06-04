@@ -1,4 +1,4 @@
-/* global RESOURCE */
+/* global RESOURCE, _ */
 'use strict';
 if (typeof unsafeWindow !== 'undefined') {
   const safeWindow = window;
@@ -6,7 +6,6 @@ if (typeof unsafeWindow !== 'undefined') {
   window.safeWindow = safeWindow;
 }
 const BLUL = window.BLUL = {
-  isDebug: false,
   debug: () => {},
   GM: GM,
   NAME: 'BLUL',
@@ -24,8 +23,7 @@ const BLUL = window.BLUL = {
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
 BLUL.preload = async (options) => {
   const { debug, slient, local, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
-  BLUL.isDebug = await debug;
-  if (BLUL.isDebug) {
+  if (debug) {
     BLUL.debug = console.debug;
     BLUL.debug(BLUL);
   }
@@ -99,30 +97,48 @@ BLUL.preload = async (options) => {
   await importModule('Config');
   await importModule('Request');
 
-  return true;
-};
+  BLUL.addResource = (name, urls, displayName) => {
+    const url = urls instanceof Array ? urls[0] : urls;
+    BLUL.RESOURCE[name] = url;
+    BLUL.Config.addItem(`resource.${name}`, displayName ?? name, url, {
+      tag: 'input',
+      list: urls instanceof Array ? urls : undefined,
+      corrector: v => {
+        const i = v.trim().search(/\/+$/);
+        return i > -1 ? v.substring(0, i) : v;
+      },
+      attribute: { type: 'url' }
+    });
+    BLUL.Config.onload.push(() => {
+      BLUL.RESOURCE[name] = BLUL.Config.get(`resource.${name}`);
+    });
+  };
 
-BLUL.load = async () => {
-  if (BLUL.isDebug) {
-    window.top[BLUL.NAME] = BLUL;
-  }
-  const Util = BLUL.Util;
-  await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
+  BLUL.setBase = _.once(urls => BLUL.addResource('base', urls, '根目录'));
 
-  BLUL.INFO.UID = window.BilibiliLive.UID;
-  BLUL.INFO.ROOMID = window.BilibiliLive.ROOMID;
-  BLUL.INFO.ANCHOR_UID = window.BilibiliLive.ANCHOR_UID;
-  BLUL.INFO.SHORT_ROOMID = window.BilibiliLive.SHORT_ROOMID;
-  BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
-  BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也自行请求获取
+  BLUL.load = _.once(async () => {
+    if (debug) {
+      window.top[BLUL.NAME] = BLUL;
+    }
+    await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
 
-  if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
-    await Util.callEachAndWait(BLUL.onupgrade, BLUL.load, BLUL, GM);
-    await GM.setValue('version', BLUL.VERSION);
-  }
-  await Util.callEachAndWait(BLUL.onpreinit, BLUL.load, BLUL, GM);
-  await Util.callEachAndWait(BLUL.oninit, BLUL.load, BLUL, GM);
-  await Util.callEachAndWait(BLUL.onpostinit, BLUL.load, BLUL, GM);
-  await Util.callEachAndWait(BLUL.onrun, BLUL.load, BLUL, GM);
+    BLUL.INFO.UID = window.BilibiliLive.UID;
+    BLUL.INFO.ROOMID = window.BilibiliLive.ROOMID;
+    BLUL.INFO.ANCHOR_UID = window.BilibiliLive.ANCHOR_UID;
+    BLUL.INFO.SHORT_ROOMID = window.BilibiliLive.SHORT_ROOMID;
+    BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
+    BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也自行请求获取
+
+    if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
+      await Util.callEachAndWait(BLUL.onupgrade, BLUL.load, BLUL, GM);
+      await GM.setValue('version', BLUL.VERSION);
+    }
+    await Util.callEachAndWait(BLUL.onpreinit, BLUL.preload, BLUL, GM);
+    await Util.callEachAndWait(BLUL.oninit, BLUL.load, BLUL, GM);
+    await Util.callEachAndWait(BLUL.onpostinit, BLUL.load, BLUL, GM);
+    await Util.callEachAndWait(BLUL.onrun, BLUL.load, BLUL, GM);
+    return true;
+  });
+
   return true;
 };

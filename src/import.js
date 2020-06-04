@@ -108,23 +108,10 @@ async function checkResetResource () {
 
 function preinitImport (BLUL) {
   BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', title: '该设置项只在非本地模式下有效', help: '此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
-  BLUL.Config.addItem('resource.blulBase', 'BLUL根目录', RESOURCE.blulBase, {
-    tag: 'input',
-    help: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src<br>https://raw.githubusercontent.com/SeaLoong/BLUL/master/src',
-    corrector: v => {
-      const i = v.trim().search(/\/+$/);
-      return i > -1 ? v.substring(0, i) : v;
-    },
-    list: [
-      'http://127.0.0.1:8080/src',
-      'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
-      'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'
-    ],
-    attribute: { type: 'url' }
-  });
-  for (const name of ['jquery', 'toastr', 'lodash']) {
-    BLUL.Config.addItem(`resource.${name}`, name, RESOURCE[name], { tag: 'input', attribute: { type: 'url' } });
-  }
+  BLUL.addResource('blulBase', [RESOURCE.blulBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
+  BLUL.addResource('lodash', [RESOURCE.lodash, 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js', 'https://raw.githubusercontent.com/lodash/lodash/4.17.15/dist/lodash.js']);
+  BLUL.addResource('toastr', [RESOURCE.toastr, 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
+  BLUL.addResource('jquery', [RESOURCE.jquery, 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
 }
 
 async function initImport (BLUL) {
@@ -132,10 +119,4 @@ async function initImport (BLUL) {
     await BLUL.Config.reset('resource', true);
     await GM.deleteValue('resetResource');
   }
-  BLUL.Config.onload.push(() => {
-    RESOURCE.blulBase = BLUL.Config.get('resource.blulBase');
-    for (const name of ['jquery', 'toastr', 'lodash']) {
-      RESOURCE[name] = BLUL.Config.get(`resource.${name}`);
-    }
-  });
 }

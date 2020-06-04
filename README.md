@@ -52,20 +52,9 @@ B站直播区用户脚本库
 (async function () {
   // 预加载 BLUL
   await BLUL.preload({debug: true});
-  // 增加一个 preinit 事件
-  BLUL.onpreinit.push(() => {
-    // 在 preinit 事件中添加一个关于脚本源的设置项
-    BLUL.Config.addItem('resource.base', '根目录', BLUL.RESOURCE.base, {
-      tag: 'input',
-      list: ['http://127.0.0.1:8080/src'],
-      attribute: { type: 'url' }
-    });
-    // 增加一个 Config 模块的 onload 事件
-    BLUL.Config.onload.push(() => {
-      // 在 onload 事件中获取对应的设置项数据并且反应到实际的使用的变量上
-      BLUL.RESOURCE.base = BLUL.Config.get('resource.base');
-    });
-  });
+  // 设置自己脚本的根目录，如果是本地模式则可以不设置
+  BLUL.setBase('https://127.0.0.1/balabala');
+  // 从中拿出 Util 模块和 importModule 函数以方便后续使用
   const { Util, importModule } = BLUL;
   // 加载自己的模块
   await importModule('MyModule');
@@ -115,6 +104,26 @@ B站直播区用户脚本库
 + 返回
 
 > ***(boolean)***: 表示是否符合参数要求地执行完毕
+
+#### `BLUL.setBase(urls)`
+
+设置脚本加载源的根目录，该函数只能执行一次。
+
++ 参数
+
+> **urls** ***(string|Array)***: URL字符串或可选URL的数组。
+
+#### `BLUL.addResource(name, urls, [displayName])`
+
+增加一个脚本加载源。
+
++ 参数
+
+> **name** ***(string)***: 设置项在路径中的名称，注意不要有特殊字符，此项会作为键值对的键使用。
+>  
+> **urls** ***(string|Array)***: URL字符串或可选URL的数组。
+>  
+> **[displayName]** ***(string)***: 设置项显示给用户的名称，默认与 `name` 相同。
 
 #### `async BLUL.load()`
 
@@ -296,13 +305,13 @@ BLUL.Config.onload(async function (BLUL) {
 
 > ***(\*)***: 对话框被关闭时提供的值。
 
-#### `Dialog.close(...returnValues)`
+#### `Dialog.close([...returnValues])`
 
 关闭对话框，并设定 `show` 的返回值
 
 + 参数
 
-> **...returnValues** ***(\*)***: 提供给 `show` 的返回值。
+> **...[returnValues]** ***(\*)***: 提供给 `show` 的返回值。
 
 -----------------------------------------
 
@@ -394,7 +403,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **options** ***(string|Object)***: URL字符串或选项对象，选项对象。
+> **options** ***(string|Object)***: URL字符串或选项对象。
 >  
 > **[options.method='GET']** ***(string)***: 请求方式。
 >  
@@ -418,7 +427,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **options** ***(string|Object)***: URL字符串或选项对象，选项对象。
+> **options** ***(string|Object)***: URL字符串或选项对象。
 >  
 > **[options.method='GET']** ***(string)***: 请求方式。
 >  
@@ -520,6 +529,18 @@ BLUL.Config.onload(async function (BLUL) {
 
 > ***(string)***: 对应代码文件的URL
 
+#### `BLUL.Util.toURLSearchParamString(search)`
+
+转换为查询字符串，参数可以是 字符串/对象 及其他 `URLSearchParams()` 支持的参数。
+
++ 参数
+
+> **search** ***(\*)***: 要被转换的参数。
+
++ 返回
+
+> ***(string)***: 转换得到的查询字符串
+
 #### `BLUL.Util.getCookie(key)`
 
 获取Cookie。
@@ -603,6 +624,22 @@ BLUL.Config.onload(async function (BLUL) {
 + 参数
 
 > **f** ***(Function)***: 待取消的次日将要执行的函数
+
+#### `BLUL.Util.sortByKey(obj, [compareFn], [reverse=false])`
+
+对对象中的每个键值对按照键的排序顺序来排序。
+
++ 参数
+
+> **obj** ***(Object)***: 对象
+>  
+> **[compareFn]** ***(Function)***: 比较函数，将会被传递到 `sort()` 函数中
+>  
+> **[reverse=false]** ***(\*)***: 是否倒序
+
++ 返回
+
+> ***(Object)***: 排序后的对象
 
 #### `async BLUL.Util.mapAndWait(array, f, [thisArg])`
 

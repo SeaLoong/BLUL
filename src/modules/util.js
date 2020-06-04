@@ -20,6 +20,10 @@ export function codeToURL (code) {
   return URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
 }
 
+export function toURLSearchParamString (search) {
+  return (search instanceof URLSearchParams ? search : new URLSearchParams(search)).toString();
+}
+
 export function getCookie (sKey) {
   return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
 }
@@ -88,6 +92,16 @@ export function cancelCallAtTime (f) {
   callAtTimeMap.delete(f);
   clearTimeout(timeout);
   resolve();
+}
+
+export function sortByKey (obj, compareFn, reverse = false) {
+  let keys = Object.keys(obj).sort(compareFn);
+  if (reverse) keys = keys.reverse();
+  const ret = {};
+  for (const key of keys) {
+    ret[key] = obj[key];
+  }
+  return ret;
 }
 
 export function mapAndWait (array, f, thisArg) {
@@ -172,12 +186,14 @@ export default {
   sleep,
   result,
   codeToURL,
+  toURLSearchParamString,
   getCookie,
   compareVersion,
   beforeNow,
   isToday,
   callAtTime,
   cancelCallAtTime,
+  sortByKey,
   mapAndWait,
   mapKeysAndWait,
   mapValuesAndWait,

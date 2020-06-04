@@ -16,9 +16,6 @@ const config = {
 };
 export default async function (importModule, BLUL, GM) {
   const Util = BLUL.Util;
-  const toURLSearchParamString = (search) => {
-    return (search instanceof URLSearchParams ? search : new URLSearchParams(search)).toString();
-  };
 
   let requesting = 0;
 
@@ -36,7 +33,7 @@ export default async function (importModule, BLUL, GM) {
       responseType: 'json'
     });
     if (!_.isEmpty(details.search)) {
-      details.url += '?' + toURLSearchParamString(details.search);
+      details.url += '?' + Util.toURLSearchParamString(details.search);
     }
     if (details.method === 'POST' && !_.isEmpty(details.data)) {
       _.defaultsDeep(details, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
@@ -95,12 +92,12 @@ export default async function (importModule, BLUL, GM) {
       referrer: ''
     });
     if (!_.isEmpty(init.search)) {
-      init.url += '?' + toURLSearchParamString(init.search);
+      init.url += '?' + Util.toURLSearchParamString(init.search);
     }
     if (init.method === 'POST' && !_.isEmpty(init.data)) {
       _.defaultsDeep(init, { headers: { 'content-type': 'application/x-www-form-urlencoded' } });
       if (init.headers?.['content-type'] === 'application/x-www-form-urlencoded') {
-        init.body = toURLSearchParamString(init.data);
+        init.body = Util.toURLSearchParamString(init.data);
       } else {
         init.body = init.data;
       }
