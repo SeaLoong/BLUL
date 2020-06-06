@@ -401,9 +401,9 @@ export default async function (importModule, BLUL, GM) {
     };
     BLUL.Page.addTopItem('设置', null, btnClick);
     /* eslint-disable no-unused-expressions */
-    GM.registerMenuCommand?.('设置', btnClick);
-    GM.registerMenuCommand?.('恢复默认设置', btnResetClick);
-    GM.registerMenuCommand?.('清除缓存', btnClearCacheClick);
+    await GM.registerMenuCommand?.('设置', btnClick);
+    await GM.registerMenuCommand?.('恢复默认设置', btnResetClick);
+    await GM.registerMenuCommand?.('清除缓存', btnClearCacheClick);
     /* eslint-enable no-unused-expressions */
   });
 

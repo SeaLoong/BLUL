@@ -80,7 +80,7 @@ BLUL.preload = async (options) => {
     BLUL.debug(BLUL);
   }
 
-  const resetResourceMenuCmdId = GM.registerMenuCommand?.('恢复默认源', async () => {
+  const resetResourceMenuCmdId = await GM.registerMenuCommand?.('恢复默认源', async () => {
     await GM.setValue('resetResource', true);
     window.location.reload(true);
   });
@@ -111,7 +111,7 @@ BLUL.preload = async (options) => {
       await BLUL.Config.reset('resource', true);
       await GM.deleteValue('resetResource');
     }
-    GM.unregisterMenuCommand?.(resetResourceMenuCmdId); // eslint-disable-line no-unused-expressions
+    await GM.unregisterMenuCommand?.(resetResourceMenuCmdId); // eslint-disable-line no-unused-expressions
   });
 
   // 特殊直播间页面，如 6 55 76
