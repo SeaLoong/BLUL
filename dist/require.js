@@ -98,6 +98,7 @@ BLUL.preload = async (options) => {
   BLUL.onpostinit = [];
   BLUL.onrun = [];
   BLUL.onpreinit.push(() => {
+    BLUL.debug('BLUL.onpreinit: resetResource');
     BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
     BLUL.addResource('blulBase', [BLUL.RESOURCE.blulBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
     BLUL.addResource('lodash', [BLUL.RESOURCE.lodash, 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js', 'https://raw.githubusercontent.com/lodash/lodash/4.17.15/dist/lodash.js']);
@@ -105,6 +106,7 @@ BLUL.preload = async (options) => {
     BLUL.addResource('jquery', [BLUL.RESOURCE.jquery, 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
   });
   BLUL.onpostinit.push(async () => {
+    BLUL.debug('BLUL.onpostinit: resetResource');
     if (await GM.getValue('resetResource')) {
       await BLUL.Config.reset('resource', true);
       await GM.deleteValue('resetResource');
