@@ -42,9 +42,9 @@ export default async function (importModule, BLUL, GM) {
       }
       return divElement;
     }
-    let { tag, name, title, help, onclick, list, attribute } = optionsMap.get(path);
+    let { tag, name, title, help, onclick, list, attribute } = optionsMap.get(path) ?? {};
     tag = await Util.result(tag);
-    name = await Util.result(name) ?? path;
+    name = (await Util.result(name)) ?? path;
     title = (await Util.result(title)) ?? name;
     help = await Util.result(help);
     list = await Util.result(list);
@@ -166,7 +166,7 @@ export default async function (importModule, BLUL, GM) {
           }
         });
       }
-      if (groupElement) {
+      if (groupElement && (type === 'checkbox' || type === 'radio')) {
         const innerOnClick = checked => {
           innerElement.prop('checked', checked);
           if (checked) groupElement.show();
@@ -176,7 +176,11 @@ export default async function (importModule, BLUL, GM) {
         onclicks.push(innerOnClick);
       }
       if (onclicks.length > 0) {
-        innerElement.click(() => Util.callChainAndWait(onclicks, innerElement, innerElement.prop('checked')));
+        if (type === 'checkbox' || type === 'radio') {
+          innerElement.click(() => Util.callChainAndWait(onclicks, innerElement, innerElement.prop('checked')));
+        } else {
+          innerElement.click(() => Util.callChainAndWait(onclicks, innerElement));
+        }
       }
       innerElementMap.set(path, innerElement);
     }
@@ -184,10 +188,13 @@ export default async function (importModule, BLUL, GM) {
   };
 
   const get = (path) => {
-    return (_.get(CONFIG, path) ?? _.get(CONFIG_DEFAULT, path))?.__VALUE__;
+    const defaultValue = _.get(CONFIG_DEFAULT, path)?.__VALUE__;
+    return defaultValue === undefined ? null : (_.get(CONFIG, path)?.__VALUE__ ?? defaultValue);
   };
 
   const set = async (path, value) => {
+    const defaultValue = _.get(CONFIG_DEFAULT, path)?.__VALUE__;
+    if (defaultValue === undefined) return;
     const corrector = optionsMap.get(path)?.corrector;
     value = corrector instanceof Function ? await corrector(value) : value;
     _.set(CONFIG, path + '.__VALUE__', value);
@@ -204,9 +211,7 @@ export default async function (importModule, BLUL, GM) {
     await Util.callEachAndWait(onload, BLUL.Config, BLUL);
   };
 
-  const save = async () => {
-    await GM.setValue('config', CONFIG);
-  };
+  const save = async () => GM.setValue('config', CONFIG);
 
   const reset = async (path = '', sub = false) => {
     let config = CONFIG_DEFAULT;
@@ -219,7 +224,7 @@ export default async function (importModule, BLUL, GM) {
     } else {
       Object.assign(CONFIG, CONFIG_DEFAULT);
     }
-    await GM.setValue('config', config);
+    return GM.setValue('config', config);
   };
 
   const upgrade = (path = '') => {
@@ -350,9 +355,10 @@ export default async function (importModule, BLUL, GM) {
 
   BLUL.onpostinit.push(async () => {
     await load();
-    if (upgrade()) {
+    const upgradeCount = upgrade();
+    if (upgradeCount) {
       await save();
-      BLUL.Logger.warn(NAME, '设置项发生更新，请检查你的设置以确保符合你的要求');
+      BLUL.Logger.warn(NAME, `有 ${upgradeCount} 个设置项发生更新，请检查你的设置以确保符合你的要求`);
       await load();
     }
     const btnResetClick = async () => {
@@ -360,7 +366,16 @@ export default async function (importModule, BLUL, GM) {
       dialog.addButton('确定', () => dialog.close(true));
       dialog.addButton('取消', () => dialog.close(false), 1);
       if (await dialog.show()) {
-        await reset('', true);
+        await reset();
+        window.location.reload(true);
+      }
+    };
+    const btnClearCacheClick = async () => {
+      const dialog = new BLUL.Dialog('确定清除缓存?', '提示');
+      dialog.addButton('确定', () => dialog.close(true));
+      dialog.addButton('取消', () => dialog.close(false), 1);
+      if (await dialog.show()) {
+        await Util.mapAndWait(await GM.listValues(), v => v.startsWith('timestamp') && GM.deleteValue(v));
         window.location.reload(true);
       }
     };
@@ -373,6 +388,7 @@ export default async function (importModule, BLUL, GM) {
       const dialog = new BLUL.Dialog(div, '设置');
       dialog.addButton('确定', () => dialog.close(true));
       dialog.addButton('恢复默认设置', btnResetClick, 1);
+      dialog.addButton('清除缓存', btnClearCacheClick, 1);
       dialog.addButton('取消', () => dialog.close(false), 1);
       if (await dialog.show()) {
         if (await saveFromContext()) {
@@ -387,6 +403,7 @@ export default async function (importModule, BLUL, GM) {
     /* eslint-disable no-unused-expressions */
     GM.registerMenuCommand?.('设置', btnClick);
     GM.registerMenuCommand?.('恢复默认设置', btnResetClick);
+    GM.registerMenuCommand?.('清除缓存', btnClearCacheClick);
     /* eslint-enable no-unused-expressions */
   });
 

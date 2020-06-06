@@ -11,7 +11,7 @@ const defaultParams = {
 };
 const config = {
   appClient: false,
-  userNumber: 1,
+  user: 0,
   params: false,
   appSecret: '560c52ccd288fed045859ed18bffd973',
   users: [],
@@ -29,7 +29,6 @@ export default async function (importModule, BLUL, GM) {
     if (resource['spark-md5']?.__VALUE__) BLUL.RESOURCE['spark-md5'] = resource['spark-md5'].__VALUE__;
     if (resource.jsencrypt?.__VALUE__) BLUL.RESOURCE.jsencrypt = resource.jsencrypt.__VALUE__;
   })();
-
   const Util = BLUL.Util;
   await importModule('spark-md5');
   const SparkMD5 = window.SparkMD5;
@@ -163,14 +162,16 @@ export default async function (importModule, BLUL, GM) {
       BLUL.Config.addItem(`appClient.params.${key}`, key, defaultParams[key], { tag: 'input', attribute: { type: 'text' } });
     }
     BLUL.Config.addItem('appClient.params.appSecret', 'appSecret', config.appSecret, { tag: 'input', attribute: { type: 'text' } });
-    BLUL.Config.addItem('appClient.userNumber', '用户数', config.userNumber, { tag: 'input', help: '此项需要在保存并重新打开设置界面后才会生效，会在下方显示多名用户的设置项。<br>取值范围为0~8。', attribute: { type: 'number', min: 0, max: 8 } });
-    for (let i = 0; i < config.userNumber; ++i) {
-      BLUL.Config.addItem(`appClient.user${i}`, () => config.usernames[i] ?? `用户 ${i + 1}`, config.users[i] ?? false, { tag: 'input', attribute: { type: 'checkbox' } });
-      BLUL.Config.addItem(`appClient.user${i}.username`, '账号', config.usernames[i] ?? '', { tag: 'input', attribute: { type: 'text' } });
-      BLUL.Config.addItem(`appClient.user${i}.password`, '密码', config.passwords[i] ?? '', { tag: 'input', attribute: { type: 'password' } });
-      BLUL.Config.addItem(`appClient.user${i}.data`, '数据', JSON.stringify(config.data[i] ?? {}), { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
+    BLUL.Config.addItem('appClient.user', '用户数', config.user, { tag: 'input', help: '此项需要在保存并重新打开设置界面后才会生效，会在下方显示多名用户的设置项。<br>取值范围为0~8。', attribute: { type: 'number', min: 0, max: 8 } });
+    const addUser = (i) => {
+      BLUL.Config.addItem(`appClient.user.${i}`, () => config.usernames[i] ? config.usernames[i] : `用户 ${i + 1}`, config.users[i] ?? false, { tag: 'input', attribute: { type: 'checkbox' } });
+      BLUL.Config.addItem(`appClient.user.${i}.username`, '账号', config.usernames[i] ?? '', { tag: 'input', attribute: { type: 'text' } });
+      BLUL.Config.addItem(`appClient.user.${i}.password`, '密码', config.passwords[i] ?? '', { tag: 'input', attribute: { type: 'password' } });
+      BLUL.Config.addItem(`appClient.user.${i}.data`, '数据', JSON.stringify(config.data[i] ?? {}), { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
+    };
+    for (let i = 0; i < config.user; ++i) {
+      addUser(i);
     }
-
     BLUL.Config.onload.push(() => {
       config.appClient = BLUL.Config.get('appClient');
       config.params = BLUL.Config.get('appClient.params');
@@ -178,26 +179,23 @@ export default async function (importModule, BLUL, GM) {
         defaultParams[key] = BLUL.Config.get(`appClient.params.${key}`);
       }
       config.appSecret = BLUL.Config.get('appClient.params.appSecret');
-      const userNumber = config.userNumber;
-      config.userNumber = BLUL.Config.get('appClient.userNumber');
-      const minUserNumber = Math.min(userNumber, config.userNumber);
-      for (let i = 0; i < minUserNumber; ++i) {
-        config.users[i] = BLUL.Config.get(`appClient.user${i}`) ?? false;
-        config.usernames[i] = BLUL.Config.get(`appClient.user${i}.username`) ?? '';
-        config.passwords[i] = BLUL.Config.get(`appClient.user${i}.password`) ?? '';
-        config.data[i] = JSON.parse(BLUL.Config.get(`appClient.user${i}.data`) ?? '{}');
+      const user = config.user;
+      config.user = BLUL.Config.get('appClient.user');
+      const minUser = Math.min(user, config.user);
+      for (let i = 0; i < minUser; ++i) {
+        config.users[i] = BLUL.Config.get(`appClient.user.${i}`) ?? false;
+        config.usernames[i] = BLUL.Config.get(`appClient.user.${i}.username`) ?? '';
+        config.passwords[i] = BLUL.Config.get(`appClient.user.${i}.password`) ?? '';
+        config.data[i] = JSON.parse(BLUL.Config.get(`appClient.user.${i}.data`) ?? '{}');
       }
-      for (let i = userNumber; i < config.userNumber; ++i) {
-        BLUL.Config.addItem(`appClient.user${i}`, () => config.usernames[i] ? config.usernames[i] : `用户 ${i + 1}`, config.users[i] ?? false, { tag: 'input', attribute: { type: 'checkbox' } });
-        BLUL.Config.addItem(`appClient.user${i}.username`, '账号', config.usernames[i] ?? '', { tag: 'input', attribute: { type: 'text' } });
-        BLUL.Config.addItem(`appClient.user${i}.password`, '密码', config.passwords[i] ?? '', { tag: 'input', attribute: { type: 'password' } });
-        BLUL.Config.addItem(`appClient.user${i}.data`, '数据', JSON.stringify(config.data[i] ?? {}), { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
+      for (let i = user; i < config.user; ++i) {
+        addUser(i);
       }
-      for (let i = config.userNumber; i < userNumber; ++i) {
-        BLUL.Config.removeItem(`appClient.user${i}`);
-        BLUL.Config.removeItem(`appClient.user${i}.username`);
-        BLUL.Config.removeItem(`appClient.user${i}.password`);
-        BLUL.Config.removeItem(`appClient.user${i}.data`);
+      for (let i = config.user; i < user; ++i) {
+        BLUL.Config.removeItem(`appClient.user.${i}`);
+        BLUL.Config.removeItem(`appClient.user.${i}.username`);
+        BLUL.Config.removeItem(`appClient.user.${i}.password`);
+        BLUL.Config.removeItem(`appClient.user.${i}.data`);
       }
     });
   });

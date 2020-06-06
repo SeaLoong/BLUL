@@ -1,19 +1,27 @@
-/* eslint-disable no-unused-vars */
-const RESOURCE = {
-  base: '',
-  blulBase: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
-  lodash: 'https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js',
-  toastr: 'https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js',
-  jquery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js'
+'use strict';
+if (typeof unsafeWindow !== 'undefined') {
+  const safeWindow = window;
+  window = unsafeWindow; // eslint-disable-line no-global-assign
+  window.safeWindow = safeWindow;
+}
+const BLUL = window.BLUL = {
+  debug: () => {},
+  NAME: 'BLUL',
+  ENVIRONMENT: GM.info.scriptHandler,
+  ENVIRONMENT_VERSION: GM.info.version,
+  VERSION: GM.info.script.version,
+  RESOURCE: {
+    base: '',
+    blulBase: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
+    lodash: 'https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js',
+    toastr: 'https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js',
+    jquery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js'
+  },
+  MODULES_NAME: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'AppClient'],
+  INFO: {}
 };
 
-const BLUL_MODULES_NAME = ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'AppClient'];
-for (const key in RESOURCE) {
-  if (key === 'base' || key === 'blulBase') continue;
-  BLUL_MODULES_NAME.push(RESOURCE[key]);
-}
-
-function createImportModuleFunc (context, keepContext = false) {
+BLUL.createImportModuleFunc = function (context, keepContext = false) {
   /**
    * 如果需要上下文, Module 应当返回(export default)一个 Function/AsyncFunction, 其参数表示上下文, 且第一个参数是importModule
    * 在不需要上下文的情况下可以返回任意
@@ -22,7 +30,7 @@ function createImportModuleFunc (context, keepContext = false) {
   async function importModule (name, reImport = false) {
     try {
       if (!reImport && importUrlMap.has(name)) return importUrlMap.get(name);
-      const url = await GM.getResourceUrl(name) ?? RESOURCE[name] ?? ((BLUL_MODULES_NAME.includes(name) ? RESOURCE.blulBase : (RESOURCE.base ?? RESOURCE.blulBase)) + '/modules/' + name.toLowerCase() + '.js');
+      const url = await GM.getResourceUrl(name) ?? BLUL.RESOURCE[name] ?? ((BLUL.MODULES_NAME.includes(name) ? BLUL.RESOURCE.blulBase : (BLUL.RESOURCE.base ?? BLUL.RESOURCE.blulBase)) + '/modules/' + name.toLowerCase() + '.js');
       let ret = await import(url);
       const def = ret.default;
       if (def instanceof Function) ret = def.apply(def, context);
@@ -35,9 +43,9 @@ function createImportModuleFunc (context, keepContext = false) {
   }
   if (!keepContext) context.unshift(importModule);
   return importModule;
-}
+};
 
-function createImportModuleFromCodeFunc (context, keepContext = false) {
+BLUL.createImportModuleFromCodeFunc = function (context, keepContext = false) {
   /**
    * 如果需要上下文, Module 应当返回(const exports = )一个 Function/AsyncFunction, 其参数表示上下文, 且第一个参数是importModule
    * 在不需要上下文的情况下可以返回任意
@@ -61,78 +69,53 @@ function createImportModuleFromCodeFunc (context, keepContext = false) {
   }
   if (!keepContext) context.unshift(importModule);
   return importModule;
-}
-
-async function checkResetResource () {
-  // eslint-disable-next-line no-unused-expressions
-  GM.registerMenuCommand?.('恢复默认源', async () => {
-    await GM.setValue('resetResource', true);
-    window.location.reload(true);
-  });
-  if (await GM.getValue('resetResource')) return;
-  const resource = (await GM.getValue('config'))?.resource;
-  if (!resource) return;
-  for (const key in RESOURCE) {
-    if (resource[key]) RESOURCE[key] = resource[key].__VALUE__;
-  }
-}
-
-function preinitImport (BLUL) {
-  BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
-  BLUL.addResource('blulBase', [RESOURCE.blulBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
-  BLUL.addResource('lodash', [RESOURCE.lodash, 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js', 'https://raw.githubusercontent.com/lodash/lodash/4.17.15/dist/lodash.js']);
-  BLUL.addResource('toastr', [RESOURCE.toastr, 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
-  BLUL.addResource('jquery', [RESOURCE.jquery, 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
-}
-
-async function initImport (BLUL) {
-  if (await GM.getValue('resetResource')) {
-    await BLUL.Config.reset('resource', true);
-    await GM.deleteValue('resetResource');
-  }
-}
-
-
-/* global RESOURCE, _ */
-'use strict';
-if (typeof unsafeWindow !== 'undefined') {
-  const safeWindow = window;
-  window = unsafeWindow; // eslint-disable-line no-global-assign
-  window.safeWindow = safeWindow;
-}
-const BLUL = window.BLUL = {
-  debug: () => {},
-  GM: GM,
-  NAME: 'BLUL',
-  ENVIRONMENT: GM.info.scriptHandler,
-  ENVIRONMENT_VERSION: GM.info.version,
-  VERSION: GM.info.script.version,
-  RESOURCE: RESOURCE,
-  INFO: {}
 };
+
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
 BLUL.preload = async (options) => {
   const { debug, slient, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
   if (debug) {
     BLUL.debug = console.debug;
+    BLUL.GM = GM;
     BLUL.debug(BLUL);
   }
 
-  /* eslint-disable no-undef */
-  await checkResetResource();
+  const resetResourceMenuCmdId = GM.registerMenuCommand?.('恢复默认源', async () => {
+    await GM.setValue('resetResource', true);
+    window.location.reload(true);
+  });
+  if (!await GM.getValue('resetResource')) {
+    const resource = (await GM.getValue('config'))?.resource;
+    if (resource) {
+      for (const key in BLUL.RESOURCE) {
+        if (resource[key]) BLUL.RESOURCE[key] = resource[key].__VALUE__;
+      }
+    }
+  }
   BLUL.onupgrade = [];
   BLUL.onpreinit = [];
   BLUL.oninit = [];
   BLUL.onpostinit = [];
   BLUL.onrun = [];
-  BLUL.onpreinit.push(preinitImport);
-  BLUL.oninit.push(initImport);
-  /* eslint-enable no-undef */
+  BLUL.onpreinit.push(() => {
+    BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
+    BLUL.addResource('blulBase', [BLUL.RESOURCE.blulBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
+    BLUL.addResource('lodash', [BLUL.RESOURCE.lodash, 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js', 'https://raw.githubusercontent.com/lodash/lodash/4.17.15/dist/lodash.js']);
+    BLUL.addResource('toastr', [BLUL.RESOURCE.toastr, 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
+    BLUL.addResource('jquery', [BLUL.RESOURCE.jquery, 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
+  });
+  BLUL.onpostinit.push(async () => {
+    if (await GM.getValue('resetResource')) {
+      await BLUL.Config.reset('resource', true);
+      await GM.deleteValue('resetResource');
+    }
+    GM.unregisterMenuCommand?.(resetResourceMenuCmdId); // eslint-disable-line no-unused-expressions
+  });
 
   // 特殊直播间页面，如 6 55 76
   if (!loadInSpecial && document.getElementById('player-ctnr')) return true;
 
-  const importModule = BLUL.importModule = createImportModuleFunc([BLUL, GM]); // eslint-disable-line no-undef
+  const importModule = BLUL.importModule = BLUL.createImportModuleFunc([BLUL, GM]);
 
   await importModule('jquery');
   await importModule('Toast');
@@ -160,7 +143,7 @@ BLUL.preload = async (options) => {
       await GM.deleteValue(mark);
     });
   }
-  await importModule('lodash');
+  await importModule('lodash'); /* global _ */
   const Util = BLUL.Util = await importModule('Util');
 
   if (login) {

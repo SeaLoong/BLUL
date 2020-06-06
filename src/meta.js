@@ -14,13 +14,14 @@
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @grant        GM.deleteValue
+// @grant        GM.listValues
 // @grant        GM.getResourceUrl
 // @grant        GM.xmlHttpRequest
 // @grant        GM.addStyle
 // @grant        GM.getResourceText
 // @grant        GM.registerMenuCommand
+// @grant        GM.unregisterMenuCommand
 // @run-at       document-start
 // @license      MIT License
-// @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/import.js
 // @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/main.js
 // ==/UserScript==
