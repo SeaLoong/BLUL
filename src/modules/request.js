@@ -124,9 +124,11 @@ export default async function (importModule, BLUL, GM) {
   BLUL.onpreinit.push(() => {
     BLUL.Config.addItem('request', '网络请求设置', false, {
       tag: 'input',
-      onclick: async (checked) => {
+      title: '如果你不明白这是什么，请不要修改此设置项。',
+      help: '如果你不明白这是什么，请不要修改此设置项。',
+      onclick: (checked) => {
         if (!checked) return;
-        const dialog = new BLUL.Dialog('除非您知道自己在做什么，否则不建议修改这项设置。确定要继续？', '警告');
+        const dialog = new BLUL.Dialog('如果你不明白这是什么，请不要修改此设置项。确定要继续？', '警告');
         dialog.addButton('确定', () => dialog.close(true));
         dialog.addButton('取消', () => dialog.close(false), 1);
         return dialog.show();

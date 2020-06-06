@@ -22,9 +22,11 @@ export default async function (importModule, BLUL, GM) {
   .${cssInputButton} {  }
   .${cssInputCheckbox} { vertical-align: bottom; margin: 0 8px 0 0; height: 16px; width: 16px; }
   .${cssInputTextbox} { margin: -1px 0 -1px 8px; padding: 0; height: 19px; }
-  .${cssInputTextbox}.number { width: 100px; }
-  .${cssInputTextbox}.text { width: 500px; }
-  .${cssInputTextbox}.url { width: 500px; }
+  .${cssInputTextbox}.number { width: 80px; }
+  .${cssInputTextbox}.tel { width: 80px; }
+  .${cssInputTextbox}.text { width: 240px; }
+  .${cssInputTextbox}.password { width: 240px; }
+  .${cssInputTextbox}.url { width: 600px; }
   .${cssInputSlider} { width: 200px; }
   .${cssHelpButton} { margin: 0 4px; cursor: pointer; text-decoration: underline; color: #0080c6; display: inline; }
   `);
@@ -64,8 +66,8 @@ export default async function (importModule, BLUL, GM) {
         break;
       case 'input':
         innerElement = $('<input/>');
-        attribute.list = `${BLUL.NAME}-config-datalist-${path}`;
         if (list) {
+          attribute.list = `${BLUL.NAME}-config-datalist-${path}`;
           listElement = $(`<datalist id="${attribute.list}"/>`);
           itemElement.append(listElement);
         }

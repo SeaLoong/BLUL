@@ -13,25 +13,23 @@ const BLUL = window.BLUL = {
   ENVIRONMENT_VERSION: GM.info.version,
   VERSION: GM.info.script.version,
   RESOURCE: RESOURCE,
-  INFO: {},
-  onupgrade: [],
-  onpreinit: [],
-  oninit: [],
-  onpostinit: [],
-  onrun: []
+  INFO: {}
 };
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
 BLUL.preload = async (options) => {
-  const { debug, slient, local, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
+  const { debug, slient, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
   if (debug) {
     BLUL.debug = console.debug;
     BLUL.debug(BLUL);
   }
 
   /* eslint-disable no-undef */
-  if (!(local ?? isLocalResource())) {
-    await checkResetResource();
-  }
+  await checkResetResource();
+  BLUL.onupgrade = [];
+  BLUL.onpreinit = [];
+  BLUL.oninit = [];
+  BLUL.onpostinit = [];
+  BLUL.onrun = [];
   BLUL.onpreinit.push(preinitImport);
   BLUL.oninit.push(initImport);
   /* eslint-enable no-undef */
@@ -39,7 +37,7 @@ BLUL.preload = async (options) => {
   // 特殊直播间页面，如 6 55 76
   if (!loadInSpecial && document.getElementById('player-ctnr')) return true;
 
-  const importModule = BLUL.importModule = (local ?? isLocalResource()) ? createImportModuleFromGMFunc([BLUL, GM]) : createImportModuleFromResourceFunc([BLUL, GM]); // eslint-disable-line no-undef
+  const importModule = BLUL.importModule = createImportModuleFunc([BLUL, GM]); // eslint-disable-line no-undef
 
   await importModule('jquery');
   await importModule('Toast');
@@ -81,21 +79,25 @@ BLUL.preload = async (options) => {
   }
   await importModule('Dialog');
 
-  if (EULA && Util.compareVersion(EULA_VERSION, await GM.getValue('eulaVersion')) > 0) {
-    if (!await GM.getValue('eula') && await (async () => {
-      const dialog = new BLUL.Dialog(await Util.result(EULA), '最终用户许可协议');
+  if (EULA) {
+    if (Util.compareVersion(EULA_VERSION, await GM.getValue('eulaVersion')) > 0) {
+      await GM.setValue('eula', false);
+    }
+    if (!await GM.getValue('eula')) {
+      const dialog = new BLUL.Dialog((await Util.result(EULA)).replace(/\n/g, '<br>'), '最终用户许可协议');
       dialog.addButton('我同意', () => dialog.close(true));
       dialog.addButton('我拒绝', () => dialog.close(false), 1);
-      return !dialog.show();
-    })()) return;
-    await GM.setValue('eula', true);
-    await GM.setValue('eulaVersion', EULA_VERSION);
+      if (!await dialog.show()) return;
+      await GM.setValue('eula', true);
+      await GM.setValue('eulaVersion', EULA_VERSION);
+    }
   }
 
   await importModule('Page');
   await importModule('Logger');
   await importModule('Config');
   await importModule('Request');
+  await importModule('AppClient');
 
   BLUL.addResource = (name, urls, displayName) => {
     const url = urls instanceof Array ? urls[0] : urls;
@@ -127,16 +129,21 @@ BLUL.preload = async (options) => {
     BLUL.INFO.ANCHOR_UID = window.BilibiliLive.ANCHOR_UID;
     BLUL.INFO.SHORT_ROOMID = window.BilibiliLive.SHORT_ROOMID;
     BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
-    BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也自行请求获取
+    BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也可以自行请求获取
 
     if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
       await Util.callEachAndWait(BLUL.onupgrade, BLUL.load, BLUL, GM);
       await GM.setValue('version', BLUL.VERSION);
     }
-    await Util.callEachAndWait(BLUL.onpreinit, BLUL.preload, BLUL, GM);
+    BLUL.onupgrade = null;
+    await Util.callEachAndWait(BLUL.onpreinit, BLUL.load, BLUL, GM);
+    BLUL.onpreinit = null;
     await Util.callEachAndWait(BLUL.oninit, BLUL.load, BLUL, GM);
+    BLUL.oninit = null;
     await Util.callEachAndWait(BLUL.onpostinit, BLUL.load, BLUL, GM);
+    BLUL.onpostinit = null;
     await Util.callEachAndWait(BLUL.onrun, BLUL.load, BLUL, GM);
+    BLUL.onrun = null;
     return true;
   });
 

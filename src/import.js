@@ -7,7 +7,7 @@ const RESOURCE = {
   jquery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js'
 };
 
-const BLUL_MODULES_NAME = ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request'];
+const BLUL_MODULES_NAME = ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'AppClient'];
 for (const key in RESOURCE) {
   if (key === 'base' || key === 'blulBase') continue;
   BLUL_MODULES_NAME.push(RESOURCE[key]);
@@ -19,36 +19,19 @@ function createImportModuleFunc (context, keepContext = false) {
    * 在不需要上下文的情况下可以返回任意
    */
   const importUrlMap = new Map();
-  async function importModule (url, reImport = false) {
+  async function importModule (name, reImport = false) {
     try {
-      if (!reImport && importUrlMap.has(url)) return importUrlMap.get(url);
+      if (!reImport && importUrlMap.has(name)) return importUrlMap.get(name);
+      const url = await GM.getResourceUrl(name) ?? RESOURCE[name] ?? ((BLUL_MODULES_NAME.includes(name) ? RESOURCE.blulBase : (RESOURCE.base ?? RESOURCE.blulBase)) + '/modules/' + name.toLowerCase() + '.js');
       let ret = await import(url);
       const def = ret.default;
       if (def instanceof Function) ret = def.apply(def, context);
       ret = await ret;
-      importUrlMap.set(url, ret);
+      importUrlMap.set(name, ret);
       return ret;
     } catch (error) {
       console.error('[BLUL]模块导入失败', error);
     }
-  }
-  if (!keepContext) context.unshift(importModule);
-  return importModule;
-}
-
-function createImportModuleFromResourceFunc (context, keepContext = false) {
-  const rawImportModule = createImportModuleFunc(context, true);
-  async function importModule (name, reImport) {
-    return rawImportModule(RESOURCE[name] ?? ((BLUL_MODULES_NAME.includes(name) ? RESOURCE.blulBase : (RESOURCE.base ?? RESOURCE.blulBase)) + '/modules/' + name.toLowerCase() + '.js'), reImport);
-  }
-  if (!keepContext) context.unshift(importModule);
-  return importModule;
-}
-
-function createImportModuleFromGMFunc (context, keepContext = false) {
-  const rawImportModule = createImportModuleFunc(context, true);
-  async function importModule (name, reImport) {
-    return rawImportModule(await GM.getResourceUrl(name), reImport);
   }
   if (!keepContext) context.unshift(importModule);
   return importModule;
@@ -64,8 +47,9 @@ function createImportModuleFromCodeFunc (context, keepContext = false) {
   async function importModule (code, reImport = false) {
     try {
       if (!reImport && importCodeMap.has(code)) return importCodeMap.get(code);
+      code = await GM.getResourceText(code) ?? `${code};\n if (typeof exports !== "undefined") return exports;`;
       // eslint-disable-next-line no-new-func
-      const fn = Function(`${code};\n if (typeof exports !== "undefined") return exports;`);
+      const fn = Function(code);
       let ret = fn.apply(fn, context);
       if (ret instanceof Function) ret = ret.apply(ret, context);
       ret = await ret;
@@ -77,19 +61,6 @@ function createImportModuleFromCodeFunc (context, keepContext = false) {
   }
   if (!keepContext) context.unshift(importModule);
   return importModule;
-}
-
-function createImportModuleFromCodeGMFunc (context, keepContext = false) {
-  const rawImportModule = createImportModuleFromCodeFunc(context, true);
-  async function importModule (name, reImport) {
-    return rawImportModule(await GM.getResourceText(name), reImport);
-  }
-  if (!keepContext) context.unshift(importModule);
-  return importModule;
-}
-
-function isLocalResource () {
-  return GM.info.script.resources.some(o => o.url.endsWith('.js'));
 }
 
 async function checkResetResource () {
@@ -107,7 +78,7 @@ async function checkResetResource () {
 }
 
 function preinitImport (BLUL) {
-  BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', title: '该设置项只在非本地模式下有效', help: '此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
+  BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
   BLUL.addResource('blulBase', [RESOURCE.blulBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
   BLUL.addResource('lodash', [RESOURCE.lodash, 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js', 'https://raw.githubusercontent.com/lodash/lodash/4.17.15/dist/lodash.js']);
   BLUL.addResource('toastr', [RESOURCE.toastr, 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
