@@ -63,21 +63,30 @@ export function isToday (ts) {
   return (d - t < 86400e3);
 }
 
-const callAtTimeMap = new Map();
-
-export function callAtTime (f, h = 0, min = 1, s = 0, ms = 0) {
-  if (callAtTimeMap.has(f)) return callAtTimeMap.get(f).promise;
-  const t = new Date();
-  t.setHours(h, min + t.getTimezoneOffset() + 480, s, ms);
-  if (t < Date.now()) {
+export function atTime (ts, hours = 0, min = 1, sec = 0, ms = 0) {
+  ts = ts ?? Date.now();
+  const t = new Date(ts);
+  t.setHours(hours, min + t.getTimezoneOffset() + 480, sec, ms);
+  if (t < ts) {
     t.setDate(t.getDate() + 1);
   }
+  return t;
+}
+
+export function isAtTime (ts, hours, min, sec, ms) {
+  return atTime(ts, hours, min, sec, ms) <= Date.now();
+}
+
+const callAtTimeMap = new Map();
+
+export function callAtTime (f, hours, min, sec, ms) {
+  if (callAtTimeMap.has(f)) return callAtTimeMap.get(f).promise;
   const obj = {};
   const promise = new Promise(resolve => {
     const timeout = setTimeout(() => {
       callAtTimeMap.delete(f);
       resolve(result(f));
-    }, t - Date.now());
+    }, atTime(Date.now(), hours, min, sec, ms) - Date.now());
     obj.timeout = timeout;
     obj.resolve = resolve;
   });
@@ -191,6 +200,8 @@ export default {
   compareVersion,
   beforeNow,
   isToday,
+  atTime,
+  isAtTime,
   callAtTime,
   cancelCallAtTime,
   sortByKey,

@@ -595,6 +595,48 @@ BLUL.Config.onload(async function (BLUL) {
 
 > ***(boolean)***: 判断的结果
 
+#### `BLUL.Util.atTime([ts=Date.now()], [hours=0], [min=1], [sec=0], [ms=0])`
+
+计算并返回在给定时间戳下，下一次时间对应的时间戳（经过时区修正）
+
++ 参数
+
+> **[ts=Date.now()]** ***(number)***: 时间戳
+>  
+> **[hours=0]** ***(number)***: 小时
+>  
+> **[min=1]** ***(number)***: 分钟
+>  
+> **[sec=0]** ***(number)***: 秒
+>  
+> **[ms=0]** ***(number)***: 毫秒
+
++ 返回
+
+> ***(number)***: 下次时间对应的时间戳
+
+#### `BLUL.Util.isAtTime([ts=Date.now()], [hours=0], [min=1], [sec=0], [ms=0])`
+
+判断 `atTime(ts, hours, min, sec, ms)` 返回的时间戳是否小于当前时间戳（经过时区修正）
+
+等价于 `return atTime(ts, hours, min, sec, ms) <= Date.now()`
+
++ 参数
+
+> **[ts=Date.now()]** ***(number)***: 时间戳
+>  
+> **[hours=0]** ***(number)***: 小时
+>  
+> **[min=1]** ***(number)***: 分钟
+>  
+> **[sec=0]** ***(number)***: 秒
+>  
+> **[ms=0]** ***(number)***: 毫秒
+
++ 返回
+
+> ***(boolean)***: 判断结果
+
 #### `BLUL.Util.callAtTime(f, [hours=0], [min=1], [sec=0], [ms=0])`
 
 在指定的时间（与日期无关）执行给定的函数，以UTC+8为标准（经过时区修正）。
