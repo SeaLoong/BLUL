@@ -38,7 +38,7 @@ BLUL.createImportModuleFunc = function (context, keepContext = false) {
       importUrlMap.set(name, ret);
       return ret;
     } catch (error) {
-      console.error('[BLUL]模块导入失败', error);
+      (BLUL.Toast ?? console).error('模块导入失败', error);
     }
   }
   if (!keepContext) context.unshift(importModule);
@@ -64,7 +64,7 @@ BLUL.createImportModuleFromCodeFunc = function (context, keepContext = false) {
       importCodeMap.set(code, ret);
       return ret;
     } catch (error) {
-      console.error('[BLUL]模块导入失败', error);
+      (BLUL.Toast ?? console).error('模块导入失败', error);
     }
   }
   if (!keepContext) context.unshift(importModule);
