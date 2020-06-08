@@ -19,11 +19,13 @@ B站直播区用户脚本库
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @grant        GM.deleteValue
+// @grant        GM.listValues
 // @grant        GM.getResourceUrl
 // @grant        GM.xmlHttpRequest
 // @grant        GM.addStyle
 // @grant        GM.getResourceText
 // @grant        GM.registerMenuCommand
+// @grant        GM.unregisterMenuCommand
 // @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/dist/require.js
 ```
 
@@ -33,6 +35,8 @@ B站直播区用户脚本库
 // @resource     jquery https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js
 // @resource     lodash https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js
 // @resource     toastr https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
+// @resource     spark-md5 https://cdn.bootcdn.net/ajax/libs/spark-md5/3.0.0/spark-md5.min.js
+// @resource     jsencrypt https://cdn.jsdelivr.net/npm/jsencrypt@3.0.0-rc.1/bin/jsencrypt.min.js
 // @resource     Toast https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/toast.js
 // @resource     Util https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/util.js
 // @resource     Dialog https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/dialog.js
@@ -79,6 +83,46 @@ B站直播区用户脚本库
 
 ### **主脚本**
 
+#### `BLUL.onupgrade` 事件
+
+在脚本发生版本更新时触发，这是最早触发的事件。
+
+```javascript
+BLUL.onupgrade.push(async (BLUL, GM) => {});
+```
+
+#### `BLUL.onpreinit` 事件
+
+在脚本判断是否发生版本更新之后触发（不论是否触发 `BLUL.onupgrade`）。
+
+```javascript
+BLUL.onpreinit.push(async (BLUL, GM) => {});
+```
+
+#### `BLUL.oninit` 事件
+
+在 `BLUL.onpreinit` 之后触发。
+
+```javascript
+BLUL.oninit.push(async (BLUL, GM) => {});
+```
+
+#### `BLUL.onpostinit` 事件
+
+在 `BLUL.oninit` 之后触发。
+
+```javascript
+BLUL.onpostinit.push(async (BLUL, GM) => {});
+```
+
+#### `BLUL.onrun` 事件
+
+在 `BLUL.onpostinit` 之后触发，这是最晚触发的事件。其命名也说明了这个事件应当是模块主要逻辑开始执行的入口。
+
+```javascript
+BLUL.onrun.push(async (BLUL, GM) => {});
+```
+
 #### `async BLUL.preload([options={}])`
 
 + 参数
@@ -103,7 +147,7 @@ B站直播区用户脚本库
 
 + 返回
 
-> ***(boolean)***: 表示是否符合参数要求地执行完毕
+> ***(boolean)***: 表示是否符合参数要求地执行完毕。
 
 #### `BLUL.setBase(urls)`
 
@@ -129,7 +173,7 @@ B站直播区用户脚本库
 
 + 返回
 
-> ***(boolean)***: 表示是否符合参数要求地执行完毕
+> ***(boolean)***: 表示是否符合参数要求地执行完毕。
 
 -----------------------------------------
 
@@ -137,17 +181,17 @@ B站直播区用户脚本库
 
 #### `BLUL.Config.onload` 事件
 
-在从存储中读取配置的时候触发
+在从存储中读取配置的时候触发。
 
 ```javascript
-BLUL.Config.onload(async function (BLUL) {
+BLUL.Config.onload.push(async function (BLUL) {
   console.assert(this === BLUL.Config);
 });
 ```
 
 #### `BLUL.Config.get(path)`
 
-获取配置项
+获取配置项。
 
 + 参数
 
@@ -155,7 +199,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `async BLUL.Config.set(path, value)`
 
-设置配置项，如果对应的配置项设置了 *corrector* ，那么会调用 *corrector* 并把返回值作为实际写入的值
+设置配置项，如果对应的配置项设置了 *corrector* ，那么会调用 *corrector* 并把返回值作为实际写入的值。
 
 + 参数
 
@@ -165,61 +209,61 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `async BLUL.Config.load()`
 
-从存储中读取配置
+从存储中读取配置。
 
 #### `async BLUL.Config.save()`
 
-保存配置到存储中
+保存配置到存储中。
 
 #### `async BLUL.Config.reset([path=''], [sub=false])`
 
-恢复默认配置项，并保存到存储中
+恢复默认配置项，并保存到存储中。
 
 + 参数
 
 > **[path]** ***(string)***: 需要恢复默认配置项的路径，为空则指定全部配置。
 >  
-> **[sub]** ***(boolean)***: 指定是否需要把路径下的子配置项也恢复默认配置
+> **[sub]** ***(boolean)***: 指定是否需要把路径下的子配置项也恢复默认配置。
 
 #### `BLUL.Config.upgrade()`
 
-检查配置项是否发生升级（指出现配置项的实际类型和预计类型不一致）
+检查配置项是否发生升级（指出现配置项的实际类型和预计类型不一致）。
 
 + 返回
 
-> ***(boolean)***: 表示配置项是否发生升级
+> ***(number)***: 指发生升级配置项的个数。
 
 #### `BLUL.Config.addItem(path, name, defaultValue, [options={}])`
 
 + 参数
 
-> **path** ***(string)***: 配置项的路径
+> **path** ***(string)***: 配置项的路径。
 >  
-> **name** ***(string)***: 配置项的名称
+> **name** ***(string)***: 配置项的名称。
 >  
-> **defaultValue** ***(\*)***: 配置项的默认值
+> **defaultValue** ***(\*)***: 配置项的默认值。
 >  
-> **[options={}]** ***(Object)***: 选项对象
+> **[options={}]** ***(Object)***: 选项对象。
 >  
-> **[options.tag]** ***(string|Function)***: 配置项的HTML标签，一般为 `input` 、 `select` ，若参数类型为 `Function` ，则函数返回值为实际参数。
+> **[options.tag]** ***(string|Function)***: 配置项的HTML标签，一般为 `input` 、 `select` 。若参数类型为 `Function` ，则实际参数是函数返回值。
 >  
-> **[options.title]** ***(string|Function)***: 配置项的 [\<label\>](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/label) 标签的 `title` 属性，若参数类型为 `Function` ，则函数返回值为实际参数。
+> **[options.title]** ***(string|Function)***: 配置项的 [\<label\>](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/label) 标签的 `title` 属性。若参数类型为 `Function` ，则实际参数是函数返回值。
 >  
-> **[options.help]** ***(string|Function)***: 配置项的帮助说明，若参数类型为 `Function` ，则函数返回值为实际参数。
+> **[options.help]** ***(string|Function)***: 配置项的帮助说明。若参数类型为 `Function` ，则实际参数是函数返回值。
 >  
-> **[options.onclick]** ***(Function)***: 配置项被点击时的回调，应当用在 *radio/checkbox* 上，其函数声明为 `async function (checked) {}` ，返回值*会*传递到下一个处理函数
+> **[options.onclick]** ***(Function)***: 配置项被点击时的回调，应当用在 *radio/checkbox* 上，其函数声明为 `async function (checked) {}` ，返回值*会*传递到下一个处理函数。
 >  
-> **[options.list]** ***(Array|Function)***: 配置项的选择列表，应当用在 *select*或*类文本框* 上，若参数类型为 `Function` ，则函数返回值为实际参数。
+> **[options.list]** ***(Array|Function)***: 配置项的选择列表，应当用在 *select*或*类文本框* 上。若参数类型为 `Function` ，则实际参数是函数返回值。
 >  
 > **[options.corrector]** ***(Function)***: 配置项的数值修正函数，其返回值会作为对应配置项的实际值。
 >  
-> **[options.attribute]** ***(Object|Function)***: 配置项的的HTML标签的属性，其中的所有对象会应用到对应标签上。详见 [\<input\>](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/input) 和 [\<select\>](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/select)。
+> **[options.attribute]** ***(Object|Function)***: 配置项的的HTML标签的属性，其中的所有对象会应用到对应标签上。详见 [\<input\>](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/input) 和 [\<select\>](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/select)。若参数类型为 `Function` ，则实际参数是函数返回值。
 
 #### `BLUL.Config.removeItem(path)`
 
 + 参数
 
-> **path** ***(string)***: 需要移除的配置项的路径
+> **path** ***(string)***: 需要移除的配置项的路径。
 
 -----------------------------------------
 
@@ -227,7 +271,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Dialog([content], [title])`
 
-对话框(Dialog)的构造函数，应当使用 `new` 关键字
+对话框(Dialog)的构造函数，应当使用 `new` 关键字。
 
 + 参数
 
@@ -237,7 +281,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `Dialog.setTitle([title])`
 
-设置对话框的标题
+设置对话框的标题。
 
 + 参数
 
@@ -249,7 +293,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `Dialog.addContent([content])`
 
-添加对话框的内容
+添加对话框的内容。
 
 + 参数
 
@@ -261,7 +305,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `Dialog.removeContent([index])`
 
-移除对话框的内容
+移除对话框的内容。
 
 + 参数
 
@@ -273,12 +317,14 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `Dialog.addButton(text, onclick, [style])`
 
-添加对话框的按钮
+添加对话框的按钮。
 
 + 参数
 
 > **text** ***(string)***: 按钮的文本。
+>  
 > **onclick** ***(Function)***: 按钮点击时的回调函数。
+>  
 > **[style]** ***(number)***: 按钮的样式，可选样式有 `0, 1` 。 默认为 `0` ，其他值也视为 `0`。
 
 + 返回
@@ -287,7 +333,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `Dialog.removeButton([index])`
 
-移除对话框的按钮
+移除对话框的按钮。
 
 + 参数
 
@@ -299,7 +345,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `async Dialog.show()`
 
-显示对话框
+显示对话框。
 
 + 返回
 
@@ -307,21 +353,19 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `Dialog.close([...returnValues])`
 
-关闭对话框，并设定 `show` 的返回值
+关闭对话框，并设定 `show` 的返回值。
 
 + 参数
 
-> **...[returnValues]** ***(\*)***: 提供给 `show` 的返回值。
+> **...[...returnValues]** ***(\*)***: 提供给 `show` 的返回值。
 
 -----------------------------------------
 
 ### **Logger**
 
------------------------------------------
-
 #### `BLUL.Logger.log(msg, [type='success'])`
 
-显示一条日志，日志等级为 `warn` 或 `error` 时会同时调用 `BLUL.Toast.warn` 或 `BLUL.Toast.error`
+显示一条日志，日志等级为 `warn` 或 `error` 时会同时调用 `BLUL.Toast.warn` 或 `BLUL.Toast.error`。
 
 + 参数
 
@@ -331,7 +375,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Logger.success(...msgs)`
 
-显示一条日志，日志等级为 `success`
+显示一条日志，日志等级为 `success`。
 
 + 参数
 
@@ -339,7 +383,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Logger.info(...msgs)`
 
-显示一条日志，日志等级为 `info`
+显示一条日志，日志等级为 `info`。
 
 + 参数
 
@@ -347,7 +391,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Logger.warn(...msgs)`
 
-显示一条日志，日志等级为 `warn`，同时会调用 `BLUL.Toast.warn`
+显示一条日志，日志等级为 `warn`，同时会调用 `BLUL.Toast.warn`。
 
 + 参数
 
@@ -355,7 +399,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Logger.error(...msgs)`
 
-显示一条日志，日志等级为 `error`，同时会调用 `BLUL.Toast.error`
+显示一条日志，日志等级为 `error`，同时会调用 `BLUL.Toast.error`。
 
 + 参数
 
@@ -367,7 +411,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Page.addTopItem(name, [onselect], [onclick])`
 
-增加一个顶部条目
+增加一个顶部条目。
 
 + 参数
 
@@ -383,7 +427,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Page.addContentItem([element=''])`
 
-增加一个内容条目
+增加一个内容条目。
 
 + 参数
 
@@ -399,7 +443,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `async BLUL.Request.monkey(options)`
 
-增加一个内容条目
+调用油猴的 `GM.xmlHttpRequest` 方法来进行网络请求，详见 [GM.xmlHttpRequest](https://wiki.greasespot.net/GM.xmlHttpRequest) 或 [Tampermonkey](http://www.tampermonkey.net/documentation.php#GM_xmlhttpRequest)/[Violentmonkey](https://violentmonkey.github.io/api/gm/#gm_xmlhttprequest)。
 
 + 参数
 
@@ -415,15 +459,15 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **[options.data]** ***(Object)***: POST请求的传递数据。
 >  
-> **[options.*]** ***(\*)***: 剩余参数，取决于用户环境。详情 [GM.xmlHttpRequest](https://wiki.greasespot.net/GM.xmlHttpRequest) 或 [Tampermonkey](http://www.tampermonkey.net/documentation.php#GM_xmlhttpRequest)/[Violentmonkey](https://violentmonkey.github.io/api/gm/#gm_xmlhttprequest) 文档 。
+> **[options.*]** ***(\*)***: 剩余参数，取决于用户环境，详见文档。
 
 + 返回
 
-> ***(类XMLHttpRequest)***: 取决于用户环境。详情 [GM.xmlHttpRequest](https://wiki.greasespot.net/GM.xmlHttpRequest) 或 [Tampermonkey](http://www.tampermonkey.net/documentation.php#GM_xmlhttpRequest)/[Violentmonkey](https://violentmonkey.github.io/api/gm/#gm_xmlhttprequest) 文档 。
+> ***(类XMLHttpRequest)***: 取决于用户环境，详见文档。
 
 #### `async BLUL.Request.fetch(options)`
 
-增加一个内容条目
+调用 `Fetch_API` 的 `fetch` 方法来进行网络请求。详见 [fetch](https://developer.mozilla.org/zh-CN/docs/Web/API/WindowOrWorkerGlobalScope/fetch)。
 
 + 参数
 
@@ -439,11 +483,11 @@ BLUL.Config.onload(async function (BLUL) {
 >  
 > **[options.data]** ***(Object)***: POST请求的传递数据。
 >  
-> **[options.*]** ***(\*)***: 剩余参数。详情 [fetch](https://developer.mozilla.org/zh-CN/docs/Web/API/WindowOrWorkerGlobalScope/fetch) 文档 。
+> **[options.*]** ***(\*)***: 剩余参数，详见文档。
 
 + 返回
 
-> ***(Response)***: 详情 [Response](https://developer.mozilla.org/zh-CN/docs/Web/API/Response) 文档 。
+> ***(Response)***: 详见 [Response](https://developer.mozilla.org/zh-CN/docs/Web/API/Response) 文档 。
 
 -----------------------------------------
 
@@ -451,7 +495,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Toast.success(...msgs)`
 
-显示一个浮动提示，等级为 `success`
+显示一个浮动提示，等级为 `success`。
 
 + 参数
 
@@ -459,7 +503,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Toast.info(...msgs)`
 
-显示一个浮动提示，等级为 `info`
+显示一个浮动提示，等级为 `info`。
 
 + 参数
 
@@ -467,7 +511,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Toast.warn(...msgs)`
 
-显示一个浮动提示，等级为 `warn`，同时会调用 `BLUL.Logger.warn`
+显示一个浮动提示，等级为 `warn`，同时会调用 `BLUL.Logger.warn`。
 
 + 参数
 
@@ -475,7 +519,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Toast.error(...msgs)`
 
-显示一个浮动提示，等级为 `error`，同时会调用 `BLUL.Logger.error`
+显示一个浮动提示，等级为 `error`，同时会调用 `BLUL.Logger.error`。
 
 + 参数
 
@@ -487,7 +531,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `BLUL.Util.getGlobalScope()`
 
-获取当前全局作用域的名称
+获取当前全局作用域的名称。
 
 + 返回
 
@@ -495,7 +539,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 #### `async BLUL.Util.sleep(ms)`
 
-等待（需要配合 `await` 使用）
+等待（需要配合 `await` 使用）。
 
 + 参数
 
@@ -527,7 +571,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 返回
 
-> ***(string)***: 对应代码文件的URL
+> ***(string)***: 对应代码文件的URL。
 
 #### `BLUL.Util.toURLSearchParamString(search)`
 
@@ -539,7 +583,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 返回
 
-> ***(string)***: 转换得到的查询字符串
+> ***(string)***: 转换得到的查询字符串。
 
 #### `BLUL.Util.getCookie(key)`
 
@@ -547,11 +591,11 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **key** ***(string)***: Cookie的键
+> **key** ***(string)***: Cookie的键。
 
 + 返回
 
-> ***(string)***: Cookie的值
+> ***(string)***: Cookie的值。
 
 #### `BLUL.Util.compareVersion(version1, version2)`
 
@@ -559,9 +603,9 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **version1** ***(string)***: 要比较的版本字符串1
+> **version1** ***(string)***: 要比较的版本字符串1。
 >  
-> **version2** ***(string)***: 要比较的版本字符串2
+> **version2** ***(string)***: 要比较的版本字符串2。
 
 + 返回
 
@@ -573,15 +617,15 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **ts** ***(number)***: 时间戳
+> **ts** ***(number)***: 时间戳。
 >  
-> **[range=86400e3]** ***(number)***: 时间范围，默认为1天，单位毫秒
+> **[range=86400e3]** ***(number)***: 时间范围，默认为1天，单位毫秒。
 >  
-> **[offset=60e3]** ***(number)***: 允许的时间误差，默认为1分钟，单位毫秒
+> **[offset=60e3]** ***(number)***: 允许的时间误差，默认为1分钟，单位毫秒。
 
 + 返回
 
-> ***(boolean)***: 判断的结果
+> ***(boolean)***: 判断的结果。
 
 #### `BLUL.Util.isToday(ts)`
 
@@ -589,53 +633,53 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **ts** ***(number)***: 时间戳
+> **ts** ***(number)***: 时间戳。
 
 + 返回
 
-> ***(boolean)***: 判断的结果
+> ***(boolean)***: 判断的结果。
 
 #### `BLUL.Util.atTime([ts=Date.now()], [hours=0], [min=1], [sec=0], [ms=0])`
 
-计算并返回在给定时间戳下，下一次时间对应的时间戳（经过时区修正）
+计算并返回在给定时间戳下，下一次时间对应的时间戳（经过时区修正）。
 
 + 参数
 
-> **[ts=Date.now()]** ***(number)***: 时间戳
+> **[ts=Date.now()]** ***(number)***: 时间戳。
 >  
-> **[hours=0]** ***(number)***: 小时
+> **[hours=0]** ***(number)***: 小时。
 >  
-> **[min=1]** ***(number)***: 分钟
+> **[min=1]** ***(number)***: 分钟。
 >  
-> **[sec=0]** ***(number)***: 秒
+> **[sec=0]** ***(number)***: 秒。
 >  
-> **[ms=0]** ***(number)***: 毫秒
+> **[ms=0]** ***(number)***: 毫秒。
 
 + 返回
 
-> ***(number)***: 下次时间对应的时间戳
+> ***(number)***: 下次时间对应的时间戳。
 
 #### `BLUL.Util.isAtTime([ts=Date.now()], [hours=0], [min=1], [sec=0], [ms=0])`
 
-判断 `atTime(ts, hours, min, sec, ms)` 返回的时间戳是否小于当前时间戳（经过时区修正）
+判断 `atTime(ts, hours, min, sec, ms)` 返回的时间戳是否小于当前时间戳（经过时区修正）。
 
-等价于 `return atTime(ts, hours, min, sec, ms) <= Date.now()`
+等价于 `return atTime(ts, hours, min, sec, ms) <= Date.now()`。
 
 + 参数
 
-> **[ts=Date.now()]** ***(number)***: 时间戳
+> **[ts=Date.now()]** ***(number)***: 时间戳。
 >  
-> **[hours=0]** ***(number)***: 小时
+> **[hours=0]** ***(number)***: 小时。
 >  
-> **[min=1]** ***(number)***: 分钟
+> **[min=1]** ***(number)***: 分钟。
 >  
-> **[sec=0]** ***(number)***: 秒
+> **[sec=0]** ***(number)***: 秒。
 >  
-> **[ms=0]** ***(number)***: 毫秒
+> **[ms=0]** ***(number)***: 毫秒。
 
 + 返回
 
-> ***(boolean)***: 判断结果
+> ***(boolean)***: 判断结果。
 
 #### `BLUL.Util.callAtTime(f, [hours=0], [min=1], [sec=0], [ms=0])`
 
@@ -645,19 +689,19 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **f** ***(Function)***: 待执行的函数
+> **f** ***(Function)***: 待执行的函数。
 >  
-> **[hours=0]** ***(number)***: 小时
+> **[hours=0]** ***(number)***: 小时。
 >  
-> **[min=1]** ***(number)***: 分钟
+> **[min=1]** ***(number)***: 分钟。
 >  
-> **[sec=0]** ***(number)***: 秒
+> **[sec=0]** ***(number)***: 秒。
 >  
-> **[ms=0]** ***(number)***: 毫秒
+> **[ms=0]** ***(number)***: 毫秒。
 
 + 返回
 
-> ***(Promise)***: 等待过程的Promise
+> ***(Promise)***: 等待过程的Promise。
 
 #### `BLUL.Util.cancelCallAtTime(f)`
 
@@ -665,7 +709,7 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **f** ***(Function)***: 待取消的次日将要执行的函数
+> **f** ***(Function)***: 待取消执行的函数。
 
 #### `BLUL.Util.sortByKey(obj, [compareFn], [reverse=false])`
 
@@ -673,15 +717,15 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **obj** ***(Object)***: 对象
+> **obj** ***(Object)***: 对象。
 >  
-> **[compareFn]** ***(Function)***: 比较函数，将会被传递到 `sort()` 函数中
+> **[compareFn]** ***(Function)***: 比较函数，将会被传递到 `sort()` 函数中。
 >  
-> **[reverse=false]** ***(\*)***: 是否倒序
+> **[reverse=false]** ***(\*)***: 是否倒序。
 
 + 返回
 
-> ***(Object)***: 排序后的对象
+> ***(Object)***: 排序后的对象。
 
 #### `async BLUL.Util.mapAndWait(array, f, [thisArg])`
 
@@ -689,15 +733,15 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **array** ***(Array)***: 数组
+> **array** ***(Array)***: 数组。
 >  
-> **f** ***(Function)***: 要执行的函数，其函数声明为 `async function (element, index, array) {}`
+> **f** ***(Function)***: 要执行的函数，其函数声明为 `async function (element, index, array) {}`。
 >  
-> **[thisArg]** ***(\*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数。
 
 + 返回
 
-> ***(Array)***: 所有结果组成的数组
+> ***(Array)***: 所有结果组成的数组。
 
 #### `async BLUL.Util.mapKeysAndWait(object, f, [thisArg])`
 
@@ -705,15 +749,15 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **object** ***(Object)***: 数组
+> **object** ***(Object)***: 数组。
 >  
-> **f** ***(Function)***: 要执行的函数，其函数声明为 `async function (value, key, object) {}`
+> **f** ***(Function)***: 要执行的函数，其函数声明为 `async function (value, key, object) {}`。
 >  
-> **[thisArg]** ***(\*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数。
 
 + 返回
 
-> ***(Object)***: 所有结果组成的对象
+> ***(Object)***: 所有结果组成的对象。
 
 #### `async BLUL.Util.mapValuesAndWait(object, f, [thisArg])`
 
@@ -721,15 +765,15 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **object** ***(Object)***: 数组
+> **object** ***(Object)***: 数组。
 >  
-> **f** ***(Function)***: 要执行的函数，其函数声明为 `async function (value, key, object) {}`
+> **f** ***(Function)***: 要执行的函数，其函数声明为 `async function (value, key, object) {}`。
 >  
-> **[thisArg]** ***(\*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数。
 
 + 返回
 
-> ***(Object)***: 所有结果组成的对象
+> ***(Object)***: 所有结果组成的对象。
 
 #### `async BLUL.Util.callEachAndWait(funcs, [thisArg], [...args])`
 
@@ -737,15 +781,15 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **funcs** ***(Array)***: 函数数组
+> **funcs** ***(Array)***: 函数数组。
 >  
-> **[thisArg]** ***(\*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数。
 >  
-> **[...args]** ***(\*)***: 调用时传入的参数
+> **[...args]** ***(\*)***: 调用时传入的参数。
 
 + 返回
 
-> ***(Array)***: 所有结果组成的数组
+> ***(Array)***: 所有结果组成的数组。
 
 #### `async BLUL.Util.callChainAndWait(funcs, [thisArg], [...args])`
 
@@ -753,15 +797,15 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **funcs** ***(Array)***: 函数数组
+> **funcs** ***(Array)***: 函数数组。
 >  
-> **[thisArg]** ***(\*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数。
 >  
-> **[...args]** ***(\*)***: 调用时传入的参数
+> **[...args]** ***(\*)***: 调用时传入的参数。
 
 + 返回
 
-> ***(Array)***: 所有结果组成的数组
+> ***(Array)***: 所有结果组成的数组。
 
 #### `async BLUL.Util.callUntilTrue(f, [interval=50], [thisArg], [...args])`
 
@@ -769,29 +813,29 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **f** ***(Function)***: 要执行的函数
+> **f** ***(Function)***: 要执行的函数。
 >  
-> **[interval=50]** ***(\*)***: 调用等待间隔，默认50ms
+> **[interval=50]** ***(\*)***: 调用等待间隔，默认50ms。
 >  
-> **[thisArg]** ***(\*)***: 调用时传入的this参数
+> **[thisArg]** ***(\*)***: 调用时传入的this参数。
 >  
-> **[...args]** ***(\*)***: 调用时传入的参数
+> **[...args]** ***(\*)***: 调用时传入的参数。
 
 + 返回
 
-> ***(\*)***: 调用函数返回的结果
+> ***(\*)***: 调用函数返回的结果。
 
 #### `BLUL.Util.retry(f)`
 
-在一定时间后调用给定的函数，每次调用后会使得下一次调用的等待时间翻倍。
+在一定时间后调用给定的函数，每次调用后会使得下一次调用的等待时间翻倍，最长为 1 小时。
 
 + 参数
 
-> **f** ***(Function)***: 待执行的函数
+> **f** ***(Function)***: 待执行的函数。
 
 + 返回
 
-> ***(Promise)***: 等待过程的Promise
+> ***(Promise)***: 等待过程的Promise。
 
 #### `BLUL.Util.cancelRetry(f)`
 
@@ -799,6 +843,6 @@ BLUL.Config.onload(async function (BLUL) {
 
 + 参数
 
-> **f** ***(Function)***: 待取消执行的函数
+> **f** ***(Function)***: 待取消执行的函数。
 
 -----------------------------------------
