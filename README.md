@@ -52,21 +52,48 @@ B站直播区用户脚本库
 
 ## **使用例子**
 
++ 可行的例子A
+
 ```javascript
 (async function () {
-  // 预加载 BLUL
-  await BLUL.preload({debug: true});
+  BLUL.NAME = 'BLRHH';
   // 设置自己脚本的根目录，如果是本地模式则可以不设置
-  BLUL.setBase('https://127.0.0.1/balabala');
-  // 从中拿出 Util 模块和 importModule 函数以方便后续使用
-  const { Util, importModule } = BLUL;
+  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/Bilibili-LRHH@dev/src'); // 不能加 await， 会导致阻塞
   // 加载自己的模块
-  await importModule('MyModule');
+  const importModule = BLUL.importModule;
+  importModule('MyModule'); // 不能加 await， 会导致阻塞
   /*
   做一些其他的前置操作
   */
-  // 正式加载 BLUL
-  await BLUL.load();
+  // 执行 BLUL ，参数含义参见后文
+  if (!await BLUL.run({ debug: true, slient: false, unique: true, login: true, EULA: '' })) {
+    console.error('[BLRHH] BLUL加载失败');
+    return;
+  }
+  /*
+  一般来说这里已经没有需要执行代码的地方，因为各个模块应当在 run 事件中执行模块功能
+  */
+})();
+```
+
++ 可行的例子B
+
+```javascript
+(async function () {
+  BLUL.NAME = 'BLRHH';
+  /*
+  做一些前置操作
+  */
+  // 执行 BLUL ，参数含义参见后文
+  if (!await BLUL.run({ debug: true, slient: false, unique: true, login: true, EULA: '' })) {
+    console.error('[BLRHH] BLUL加载失败');
+    return;
+  }
+  // 设置自己脚本的根目录，如果是本地模式则可以不设置
+  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/Bilibili-LRHH@dev/src'); // 甚至你可以加上await 保证先后顺序
+  // 加载自己的模块
+  const importModule = BLUL.importModule;
+  importModule('MyModule'); // 同样你也可以加上 await 保证先后顺序
   /*
   一般来说这里已经没有需要执行代码的地方，因为各个模块应当在 run 事件中执行模块功能
   */
@@ -77,7 +104,11 @@ B站直播区用户脚本库
 
 ## **API**
 
-本库分为几个模块，各个模块提供的接口有不同的使用方式，以下按照模块来分别说明用法
+本库分为几个模块，各个模块提供的接口有不同的使用方式，以下按照模块来分别说明用法。
+
+其中在函数声明前带有 `async` 的说明这个函数应当配合 `await` 使用，否则可能导致不可预计的后果。
+
+参数/样例的函数声明前带 `async` 的说明这个参数兼容异步函数，并且会等待异步函数执行完成和使用其返回值作为实际参数值（如果需要的话）。
 
 -----------------------------------------
 
@@ -88,7 +119,7 @@ B站直播区用户脚本库
 在脚本发生版本更新时触发，这是最早触发的事件。
 
 ```javascript
-BLUL.onupgrade.push(async (BLUL, GM) => {});
+BLUL.onupgrade(async (BLUL, GM) => {});
 ```
 
 #### `BLUL.onpreinit` 事件
@@ -96,7 +127,7 @@ BLUL.onupgrade.push(async (BLUL, GM) => {});
 在脚本判断是否发生版本更新之后触发（不论是否触发 `BLUL.onupgrade`）。
 
 ```javascript
-BLUL.onpreinit.push(async (BLUL, GM) => {});
+BLUL.onpreinit(async (BLUL, GM) => {});
 ```
 
 #### `BLUL.oninit` 事件
@@ -104,7 +135,7 @@ BLUL.onpreinit.push(async (BLUL, GM) => {});
 在 `BLUL.onpreinit` 之后触发。
 
 ```javascript
-BLUL.oninit.push(async (BLUL, GM) => {});
+BLUL.oninit(async (BLUL, GM) => {});
 ```
 
 #### `BLUL.onpostinit` 事件
@@ -112,7 +143,7 @@ BLUL.oninit.push(async (BLUL, GM) => {});
 在 `BLUL.oninit` 之后触发。
 
 ```javascript
-BLUL.onpostinit.push(async (BLUL, GM) => {});
+BLUL.onpostinit(async (BLUL, GM) => {});
 ```
 
 #### `BLUL.onrun` 事件
@@ -120,10 +151,38 @@ BLUL.onpostinit.push(async (BLUL, GM) => {});
 在 `BLUL.onpostinit` 之后触发，这是最晚触发的事件。其命名也说明了这个事件应当是模块主要逻辑开始执行的入口。
 
 ```javascript
-BLUL.onrun.push(async (BLUL, GM) => {});
+BLUL.onrun(async (BLUL, GM) => {});
 ```
 
-#### `async BLUL.preload([options={}])`
+#### `BLUL.addResource(name, urls, [displayName])`
+
+增加一个脚本加载源。
+
++ 参数
+
+> **name** ***(string)***: 设置项在路径中的名称，注意不要有特殊字符，此项会作为键值对的键使用。
+>  
+> **urls** ***(string|Array)***: URL字符串或可选URL的数组。
+>  
+> **[displayName]** ***(string)***: 设置项显示给用户的名称，默认与 `name` 相同。
+
+#### `BLUL.setBase(urls)`
+
+设置脚本加载源的根目录，该函数只能执行一次。
+
++ 参数
+
+> **urls** ***(string|Array)***: URL字符串或可选URL的数组。
+
+#### `BLUL.importModule(name)`
+
+加载模块。
+
++ 参数
+
+> **name** ***(string)***: 模块名。
+
+#### `async BLUL.run([options={}])`
 
 + 参数
 
@@ -149,32 +208,6 @@ BLUL.onrun.push(async (BLUL, GM) => {});
 
 > ***(boolean)***: 表示是否符合参数要求地执行完毕。
 
-#### `BLUL.setBase(urls)`
-
-设置脚本加载源的根目录，该函数只能执行一次。
-
-+ 参数
-
-> **urls** ***(string|Array)***: URL字符串或可选URL的数组。
-
-#### `BLUL.addResource(name, urls, [displayName])`
-
-增加一个脚本加载源。
-
-+ 参数
-
-> **name** ***(string)***: 设置项在路径中的名称，注意不要有特殊字符，此项会作为键值对的键使用。
->  
-> **urls** ***(string|Array)***: URL字符串或可选URL的数组。
->  
-> **[displayName]** ***(string)***: 设置项显示给用户的名称，默认与 `name` 相同。
-
-#### `async BLUL.load()`
-
-+ 返回
-
-> ***(boolean)***: 表示是否符合参数要求地执行完毕。
-
 -----------------------------------------
 
 ### **Config**
@@ -184,7 +217,7 @@ BLUL.onrun.push(async (BLUL, GM) => {});
 在从存储中读取配置的时候触发。
 
 ```javascript
-BLUL.Config.onload.push(async function (BLUL) {
+BLUL.Config.onload(async function (BLUL) {
   console.assert(this === BLUL.Config);
 });
 ```

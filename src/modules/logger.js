@@ -70,7 +70,7 @@ export default async function (importModule, BLUL, GM) {
     return log.call(this, msgs.join('<br>'), 'error');
   }
 
-  BLUL.onpreinit.push(() => {
+  BLUL.onpreinit(() => {
     BLUL.Page.addTopItem('日志', function (select) {
       if (select) {
         divLogger.show();
@@ -92,7 +92,7 @@ export default async function (importModule, BLUL, GM) {
     BLUL.Config.addItem('logger.maxLog', '日志上限', config.maxLog, { tag: 'input', help: '最多显示多少条日志，数值过大可能会导致性能问题', attribute: { type: 'number', min: 10, max: 10000, step: 100 } });
     BLUL.Config.addItem('logger.outputConsole', '同时输出到控制台', config.outputConsole, { tag: 'input', attribute: { type: 'checkbox' } });
 
-    BLUL.Config.onload.push(() => {
+    BLUL.Config.onload(() => {
       config.showDateTime = BLUL.Config.get('logger.showDateTime');
       config.maxLog = BLUL.Config.get('logger.maxLog');
       config.outputConsole = BLUL.Config.get('logger.outputConsole');

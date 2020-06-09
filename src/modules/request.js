@@ -121,7 +121,7 @@ export default async function (importModule, BLUL, GM) {
     });
   };
 
-  BLUL.onpreinit.push(() => {
+  BLUL.onpreinit(() => {
     BLUL.Config.addItem('request', '网络请求设置', false, {
       tag: 'input',
       title: '如果你不明白这是什么，请不要修改此设置项。',
@@ -138,7 +138,7 @@ export default async function (importModule, BLUL, GM) {
     BLUL.Config.addItem('request.interval', '请求间隔', config.interval, { tag: 'input', attribute: { type: 'number', placeholder: '单位(ms)', min: 1 } });
     BLUL.Config.addItem('request.maxRequesting', '最大并发数', config.maxRequesting, { tag: 'input', attribute: { type: 'number', min: 1 } });
 
-    BLUL.Config.onload.push(() => {
+    BLUL.Config.onload(() => {
       config.interval = BLUL.Config.get('request.interval');
       config.maxRequesting = BLUL.Config.get('request.maxRequesting');
     });

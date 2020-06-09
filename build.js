@@ -25,7 +25,7 @@ function bundleRequireMeta (path) {
       metadata = metadata.replace(new RegExp(metaRequire, 'g'), '');
     }
     const nl = '\n'.repeat(2);
-    data = insertData.join(nl) + nl + remainData;
+    data = metadata + nl + insertData.join(nl) + nl + remainData;
   }
   cacheMap.set(path, data);
   return data;

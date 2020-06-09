@@ -200,15 +200,13 @@ export default async function (importModule, BLUL, GM) {
     _.set(CONFIG, path + '.__VALUE__', value);
   };
 
-  const onload = [];
-
   const load = async () => {
     let value = await GM.getValue('config');
     if (!_.isPlainObject(value)) {
       value = {};
     }
     _.assignIn(CONFIG, value);
-    await Util.callEachAndWait(onload, BLUL.Config, BLUL);
+    await (BLUL.Config.onload = f => f.call(BLUL.Config, BLUL));
   };
 
   const save = async () => GM.setValue('config', CONFIG);
@@ -353,7 +351,7 @@ export default async function (importModule, BLUL, GM) {
     return _.unset(CONFIG_DEFAULT, path);
   };
 
-  BLUL.onpostinit.push(async () => {
+  BLUL.onpostinit(async () => {
     await load();
     const upgradeCount = upgrade();
     if (upgradeCount) {
@@ -408,7 +406,6 @@ export default async function (importModule, BLUL, GM) {
   });
 
   BLUL.Config = {
-    onload,
     get,
     set,
     load,
@@ -418,6 +415,7 @@ export default async function (importModule, BLUL, GM) {
     addItem,
     removeItem
   };
+  BLUL.lazyFn('onload', BLUL.Config);
 
   BLUL.debug('Module Loaded: Config', BLUL.Config);
 

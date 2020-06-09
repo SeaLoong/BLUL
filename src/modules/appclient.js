@@ -140,7 +140,7 @@ export default async function (importModule, BLUL, GM) {
     }
   }
 
-  BLUL.onpreinit.push(() => {
+  BLUL.onpreinit(() => {
     BLUL.addResource('spark-md5', [BLUL.RESOURCE['spark-md5'], 'https://cdn.jsdelivr.net/npm/spark-md5@3.0.1/spark-md5.min.js']);
     BLUL.addResource('jsencrypt', [BLUL.RESOURCE.jsencrypt]);
 
@@ -172,7 +172,7 @@ export default async function (importModule, BLUL, GM) {
     for (let i = 0; i < config.user; ++i) {
       addUser(i);
     }
-    BLUL.Config.onload.push(() => {
+    BLUL.Config.onload(() => {
       config.appClient = BLUL.Config.get('appClient');
       config.params = BLUL.Config.get('appClient.params');
       for (const key in defaultParams) {

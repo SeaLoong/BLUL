@@ -151,11 +151,16 @@ export async function callChainAndWait (funcs, thisArg, ...args) {
   return args[0];
 }
 
-export async function callUntilTrue (f, interval = 50, thisArg, ...args) {
+export async function callUntilTrue (f, interval = 50, timeout = 30e3, thisArg, ...args) {
   if (!(f instanceof Function)) return f;
+  let timeup = false;
+  const t = setTimeout(() => (timeup = true), timeout);
   while (true) {
     const r = await f.apply(thisArg, args);
-    if (r) return r;
+    if (r || timeup) {
+      clearTimeout(t);
+      return r;
+    }
     await sleep(interval);
   }
 }

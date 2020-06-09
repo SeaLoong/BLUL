@@ -21,6 +21,27 @@ const BLUL = window.BLUL = {
   INFO: {}
 };
 
+BLUL.lazyFn = function (name, object) {
+  let list = [];
+  let fn;
+  object = object ?? BLUL;
+  Object.defineProperty(object, name, {
+    configurable: true,
+    get: () => fn ?? ((...args) => new Promise(resolve => list.push({ args, resolve }))),
+    set: f => {
+      if (!(fn = f)) return f;
+      const rets = [];
+      for (const { resolve, args } of list) {
+        const v = f.apply(object, args);
+        rets.push(v);
+        resolve(v);
+      }
+      list = [];
+      return Promise.all(rets);
+    }
+  });
+};
+
 BLUL.createImportModuleFunc = function (context, keepContext = false) {
   /**
    * 如果需要上下文, Module 应当返回(export default)一个 Function/AsyncFunction, 其参数表示上下文, 且第一个参数是importModule
@@ -71,19 +92,42 @@ BLUL.createImportModuleFromCodeFunc = function (context, keepContext = false) {
   return importModule;
 };
 
+BLUL.lazyFn('addResource');
+BLUL.lazyFn('setBase');
+BLUL.lazyFn('importModule');
+BLUL.lazyFn('onupgrade');
+BLUL.lazyFn('onpreinit');
+BLUL.lazyFn('oninit');
+BLUL.lazyFn('onpostinit');
+BLUL.lazyFn('onrun');
+
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
-BLUL.preload = async (options) => {
+BLUL.run = async (options) => {
   const { debug, slient, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
   if (debug) {
     BLUL.debug = console.debug;
     BLUL.GM = GM;
     BLUL.debug(BLUL);
+    if (!window.top[BLUL.NAME]) {
+      window.top[BLUL.NAME] = BLUL;
+    }
   }
+
+  // 特殊直播间页面，如 6 55 76
+  if (!loadInSpecial && document.getElementById('player-ctnr')) return true;
 
   const resetResourceMenuCmdId = await GM.registerMenuCommand?.('恢复默认源', async () => {
     await GM.setValue('resetResource', true);
     window.location.reload(true);
   });
+  const unregisterMenuCmd = async () => {
+    BLUL.debug('BLUL.onpostinit: resetResource');
+    if (await GM.getValue('resetResource')) {
+      await BLUL.Config.reset('resource', true);
+      await GM.deleteValue('resetResource');
+    }
+    await GM.unregisterMenuCommand?.(resetResourceMenuCmdId); // eslint-disable-line no-unused-expressions
+  };
   if (!await GM.getValue('resetResource')) {
     const resource = (await GM.getValue('config'))?.resource;
     if (resource) {
@@ -92,12 +136,8 @@ BLUL.preload = async (options) => {
       }
     }
   }
-  BLUL.onupgrade = [];
-  BLUL.onpreinit = [];
-  BLUL.oninit = [];
-  BLUL.onpostinit = [];
-  BLUL.onrun = [];
-  BLUL.onpreinit.push(() => {
+
+  BLUL.onpreinit(() => {
     BLUL.debug('BLUL.onpreinit: resetResource');
     BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
     BLUL.addResource('blulBase', [BLUL.RESOURCE.blulBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
@@ -105,19 +145,9 @@ BLUL.preload = async (options) => {
     BLUL.addResource('toastr', [BLUL.RESOURCE.toastr, 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
     BLUL.addResource('jquery', [BLUL.RESOURCE.jquery, 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
   });
-  BLUL.onpostinit.push(async () => {
-    BLUL.debug('BLUL.onpostinit: resetResource');
-    if (await GM.getValue('resetResource')) {
-      await BLUL.Config.reset('resource', true);
-      await GM.deleteValue('resetResource');
-    }
-    await GM.unregisterMenuCommand?.(resetResourceMenuCmdId); // eslint-disable-line no-unused-expressions
-  });
+  BLUL.onpostinit(unregisterMenuCmd);
 
-  // 特殊直播间页面，如 6 55 76
-  if (!loadInSpecial && document.getElementById('player-ctnr')) return true;
-
-  const importModule = BLUL.importModule = BLUL.createImportModuleFunc([BLUL, GM]);
+  const importModule = BLUL.createImportModuleFunc([BLUL, GM]);
 
   await importModule('jquery');
   await importModule('Toast');
@@ -133,6 +163,7 @@ BLUL.preload = async (options) => {
       if (!slient) {
         BLUL.Toast.warn('已经有其他页面正在运行脚本了哟~');
       }
+      await unregisterMenuCmd();
       return false;
     }
     // 标记运行中
@@ -148,12 +179,15 @@ BLUL.preload = async (options) => {
   await importModule('lodash'); /* global _ */
   const Util = BLUL.Util = await importModule('Util');
 
+  await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
+
   if (login) {
     BLUL.INFO.CSRF = Util.getCookie('bili_jct');
     if (!BLUL.INFO.CSRF) {
       if (!slient) {
         BLUL.Toast.warn('你还没有登录呢~');
       }
+      await unregisterMenuCmd();
       return false;
     }
   }
@@ -167,7 +201,10 @@ BLUL.preload = async (options) => {
       const dialog = new BLUL.Dialog((await Util.result(EULA)).replace(/\n/g, '<br>'), '最终用户许可协议');
       dialog.addButton('我同意', () => dialog.close(true));
       dialog.addButton('我拒绝', () => dialog.close(false), 1);
-      if (!await dialog.show()) return;
+      if (!await dialog.show()) {
+        await unregisterMenuCmd();
+        return false;
+      }
       await GM.setValue('eula', true);
       await GM.setValue('eulaVersion', EULA_VERSION);
     }
@@ -179,7 +216,7 @@ BLUL.preload = async (options) => {
   await importModule('Request');
   await importModule('AppClient');
 
-  BLUL.addResource = (name, urls, displayName) => {
+  await (BLUL.addResource = (name, urls, displayName) => {
     const url = urls instanceof Array ? urls[0] : urls;
     BLUL.RESOURCE[name] = url;
     BLUL.Config.addItem(`resource.${name}`, displayName ?? name, url, {
@@ -191,41 +228,30 @@ BLUL.preload = async (options) => {
       },
       attribute: { type: 'url' }
     });
-    BLUL.Config.onload.push(() => {
+    BLUL.Config.onload(() => {
       BLUL.RESOURCE[name] = BLUL.Config.get(`resource.${name}`);
     });
-  };
-
-  BLUL.setBase = _.once(urls => BLUL.addResource('base', urls, '根目录'));
-
-  BLUL.load = _.once(async () => {
-    if (debug) {
-      window.top[BLUL.NAME] = BLUL;
-    }
-    await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
-
-    BLUL.INFO.UID = window.BilibiliLive.UID;
-    BLUL.INFO.ROOMID = window.BilibiliLive.ROOMID;
-    BLUL.INFO.ANCHOR_UID = window.BilibiliLive.ANCHOR_UID;
-    BLUL.INFO.SHORT_ROOMID = window.BilibiliLive.SHORT_ROOMID;
-    BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
-    BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也可以自行请求获取
-
-    if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
-      await Util.callEachAndWait(BLUL.onupgrade, BLUL.load, BLUL, GM);
-      await GM.setValue('version', BLUL.VERSION);
-    }
-    BLUL.onupgrade = null;
-    await Util.callEachAndWait(BLUL.onpreinit, BLUL.load, BLUL, GM);
-    BLUL.onpreinit = null;
-    await Util.callEachAndWait(BLUL.oninit, BLUL.load, BLUL, GM);
-    BLUL.oninit = null;
-    await Util.callEachAndWait(BLUL.onpostinit, BLUL.load, BLUL, GM);
-    BLUL.onpostinit = null;
-    await Util.callEachAndWait(BLUL.onrun, BLUL.load, BLUL, GM);
-    BLUL.onrun = null;
-    return true;
   });
 
+  await (BLUL.setBase = _.once(urls => BLUL.addResource('base', urls, '根目录')));
+
+  await (BLUL.importModule = importModule);
+
+  BLUL.INFO.UID = window.BilibiliLive.UID;
+  BLUL.INFO.ROOMID = window.BilibiliLive.ROOMID;
+  BLUL.INFO.ANCHOR_UID = window.BilibiliLive.ANCHOR_UID;
+  BLUL.INFO.SHORT_ROOMID = window.BilibiliLive.SHORT_ROOMID;
+  BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
+  BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也可以自行请求获取
+
+  const callHandler = f => f.call(BLUL.load, BLUL, GM);
+  if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
+    await (BLUL.onupgrade = callHandler);
+    await GM.setValue('version', BLUL.VERSION);
+  }
+  await (BLUL.onpreinit = callHandler);
+  await (BLUL.oninit = callHandler);
+  await (BLUL.onpostinit = callHandler);
+  await (BLUL.onrun = callHandler);
   return true;
 };
