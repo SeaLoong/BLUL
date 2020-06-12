@@ -49,7 +49,7 @@ const BLUL = window.BLUL = {
 };
 
 BLUL.lazyFn = function (name, object) {
-  let list = [];
+  const list = [];
   let fn;
   object = object ?? BLUL;
   Object.defineProperty(object, name, {
@@ -63,7 +63,6 @@ BLUL.lazyFn = function (name, object) {
         rets.push(v);
         resolve(v);
       }
-      list = [];
       return Promise.all(rets);
     }
   });
