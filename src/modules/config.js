@@ -40,7 +40,7 @@ export default async function (importModule, BLUL, GM) {
       for (const key in config) {
         divElement.append(await generate(config[key], key));
       }
-      return divElement;
+      return $('<form/>').append(divElement);
     }
     let { tag, name, title, help, onclick, list, attribute } = optionsMap.get(path) ?? {};
     tag = await Util.result(tag);
@@ -379,7 +379,6 @@ export default async function (importModule, BLUL, GM) {
     };
     const btnClick = async () => {
       const div = await generate();
-      await load();
       if (await loadToContext()) {
         BLUL.Logger.warn(NAME, '加载设置时出错，部分设置项未正确显示');
       }
