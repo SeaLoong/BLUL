@@ -28,9 +28,9 @@ export function getCookie (sKey) {
   return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
 }
 
-// version1 > version2 返回大于的数0
+// version1 > version2 返回大于0的数
 // version1 === version2 返回0
-// version1 < version2 返回小于的数0
+// version1 < version2 返回小于0的数
 export function compareVersion (version1, version2) {
   version1 = version1 ?? '';
   version2 = version2 ?? '';
