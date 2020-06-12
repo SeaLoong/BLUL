@@ -38,13 +38,21 @@ export function compareVersion (version1, version2) {
   const v2Arr = version2.split('.');
   const n = Math.min(v1Arr.length, v2Arr.length);
   for (let i = 0; i < n; i++) {
-    const m = Math.min(v1Arr[i].length, v2Arr[i].length);
-    for (let j = 0; j < m; j++) {
-      const c1 = v1Arr[i].charCodeAt(j);
-      const c2 = v2Arr[i].charCodeAt(j);
-      if (c1 !== c2) return c1 - c2;
+    let num1 = parseInt(v1Arr[i], 10);
+    let num2 = parseInt(v2Arr[i], 10);
+    if (isNaN(num1)) num1 = 0;
+    if (isNaN(num2)) num2 = 0;
+    if (num1 === num2) {
+      const m = Math.min(v1Arr[i].length, v2Arr[i].length);
+      for (let j = 0; j < m; j++) {
+        const c1 = v1Arr[i].charCodeAt(j);
+        const c2 = v2Arr[i].charCodeAt(j);
+        if (c1 !== c2) return c1 - c2;
+      }
+      if (v1Arr[i].length !== v2Arr[i].length) return v1Arr[i].length - v2Arr[i].length;
+    } else {
+      return num1 - num2;
     }
-    if (v1Arr[i].length !== v2Arr[i].length) return v1Arr[i].length - v2Arr[i].length;
   }
   return v1Arr.length - v2Arr.length;
 }
