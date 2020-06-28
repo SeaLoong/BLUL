@@ -71,6 +71,7 @@ export function isToday (ts) {
   return (d - t < 86400e3);
 }
 
+// 返回一个不小于 ts 的在指定时间的时间戳
 export function atTime (ts, hours = 0, min = 1, sec = 0, ms = 0) {
   ts = ts ?? Date.now();
   const t = new Date(ts);

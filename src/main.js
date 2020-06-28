@@ -12,12 +12,12 @@ const BLUL = window.BLUL = {
   VERSION: GM.info.script.version,
   RESOURCE: {
     base: '',
-    blulBase: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
+    BLULBase: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
     lodash: 'https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js',
     toastr: 'https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js',
     jquery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js'
   },
-  MODULES_NAME: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'AppClient'],
+  BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'AppClient'],
   INFO: {}
 };
 
@@ -29,14 +29,14 @@ BLUL.lazyFn = function (name, object) {
     configurable: true,
     get: () => fn ?? ((...args) => new Promise(resolve => list.push({ args, resolve }))),
     set: f => {
-      if (!(fn = f)) return f;
-      const rets = [];
-      for (const { resolve, args } of list) {
-        const v = f.apply(object, args);
-        rets.push(v);
-        resolve(v);
-      }
-      return Promise.all(rets);
+      fn = f;
+      if (!(fn instanceof Function)) return fn;
+      return (async () => {
+        for (const { resolve, args } of list) {
+          resolve(await fn.apply(object, args));
+        }
+        return fn;
+      })();
     }
   });
 };
@@ -50,7 +50,7 @@ BLUL.createImportModuleFunc = function (context, keepContext = false) {
   async function importModule (name, reImport = false) {
     try {
       if (!reImport && importUrlMap.has(name)) return importUrlMap.get(name);
-      const url = await GM.getResourceUrl(name) ?? BLUL.RESOURCE[name] ?? ((BLUL.MODULES_NAME.includes(name) ? BLUL.RESOURCE.blulBase : (BLUL.RESOURCE.base ?? BLUL.RESOURCE.blulBase)) + '/modules/' + name.toLowerCase() + '.js');
+      const url = await GM.getResourceUrl(name) ?? BLUL.RESOURCE[name] ?? ((BLUL.BLUL_MODULE_NAMES.includes(name) ? BLUL.RESOURCE.BLULBase : (BLUL.RESOURCE.base ?? BLUL.RESOURCE.BLULBase)) + '/modules/' + name.toLowerCase() + '.js');
       let ret = await import(url);
       const def = ret.default;
       if (def instanceof Function) ret = def.apply(def, context);
@@ -139,7 +139,7 @@ BLUL.run = async (options) => {
   BLUL.onpreinit(() => {
     BLUL.debug('BLUL.onpreinit: resetResource');
     BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
-    BLUL.addResource('blulBase', [BLUL.RESOURCE.blulBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
+    BLUL.addResource('BLULBase', [BLUL.RESOURCE.BLULBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
     BLUL.addResource('lodash', [BLUL.RESOURCE.lodash, 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js', 'https://raw.githubusercontent.com/lodash/lodash/4.17.15/dist/lodash.js']);
     BLUL.addResource('toastr', [BLUL.RESOURCE.toastr, 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
     BLUL.addResource('jquery', [BLUL.RESOURCE.jquery, 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
