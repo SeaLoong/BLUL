@@ -98,15 +98,13 @@ BLUL.lazyFn('oninit');
 BLUL.lazyFn('onpostinit');
 BLUL.lazyFn('onrun');
 
-BLUL.addResource = function (name, urls, displayName) {
+BLUL.addResource = async function (name, urls, displayName) {
   BLUL.RESOURCE[name] = urls instanceof Array ? urls[0] : urls;
   BLUL.__addResourceConfig(name, urls, displayName);
-  return (async () => {
-    if (await GM.getValue('resetResource')) return;
-    const resource = (await GM.getValue('config'))?.resource;
-    if (!resource) return;
-    if (resource[name]?.__VALUE__) BLUL.RESOURCE[name] = resource[name]?.__VALUE__;
-  })();
+  if (await GM.getValue('resetResource')) return;
+  const resource = (await GM.getValue('config'))?.resource;
+  if (!resource) return;
+  if (resource[name]?.__VALUE__) BLUL.RESOURCE[name] = resource[name]?.__VALUE__;
 };
 
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
@@ -137,10 +135,10 @@ BLUL.run = async (options) => {
     await GM.unregisterMenuCommand?.(resetResourceMenuCmdId); // eslint-disable-line no-unused-expressions
   };
 
-  BLUL.addResource('BLULBase', ['https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src'], 'BLUL根目录');
-  BLUL.addResource('lodash', ['https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js', 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js']);
-  BLUL.addResource('toastr', ['https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js', 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
-  BLUL.addResource('jquery', ['https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js', 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
+  await BLUL.addResource('BLULBase', ['https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src'], 'BLUL根目录');
+  await BLUL.addResource('lodash', ['https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js', 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js']);
+  await BLUL.addResource('toastr', ['https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js', 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
+  await BLUL.addResource('jquery', ['https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js', 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
 
   BLUL.onpostinit(unregisterMenuCmd);
 

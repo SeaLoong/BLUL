@@ -24,8 +24,8 @@ const config = {
   data: []
 };
 export default async function (importModule, BLUL, GM) {
-  BLUL.addResource('spark-md5', ['https://cdn.bootcdn.net/ajax/libs/spark-md5/3.0.0/spark-md5.min.js', 'https://cdn.jsdelivr.net/npm/spark-md5@3.0.1/spark-md5.min.js']);
-  BLUL.addResource('jsencrypt', ['https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/libs/jsencrypt.min.js']);
+  await BLUL.addResource('spark-md5', ['https://cdn.bootcdn.net/ajax/libs/spark-md5/3.0.0/spark-md5.min.js', 'https://cdn.jsdelivr.net/npm/spark-md5@3.0.1/spark-md5.min.js']);
+  await BLUL.addResource('jsencrypt', ['https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/libs/jsencrypt.min.js']);
 
   const Util = BLUL.Util;
   await importModule('spark-md5');

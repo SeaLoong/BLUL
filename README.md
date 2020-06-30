@@ -157,9 +157,9 @@ BLUL.onpostinit(async (BLUL, GM) => {});
 BLUL.onrun(async (BLUL, GM) => {});
 ```
 
-#### `async BLUL.addResource(name, urls, [displayName])`
+#### `async BLUL.addResource(name, urls, [displayName=name])`
 
-增加一个脚本加载源，可以使用 await 来保证按顺序读取配置项中的源。
+增加一个脚本加载源，可以使用 await 来保证读取到配置项中的源。
 
 + 参数
 
@@ -167,9 +167,9 @@ BLUL.onrun(async (BLUL, GM) => {});
 >  
 > **urls** ***(string|Array)***: URL字符串或可选URL的数组。
 >  
-> **[displayName]** ***(string)***: 设置项显示给用户的名称，默认与 `name` 相同。
+> **[displayName=name]** ***(string)***: 设置项显示给用户的名称，默认与 `name` 相同。
 
-#### `async BLUL.setBase(urls)`
+#### `BLUL.setBase(urls)`
 
 设置脚本加载源的根目录，该函数只能执行一次。
 
