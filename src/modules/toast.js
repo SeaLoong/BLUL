@@ -30,7 +30,7 @@ export default async function (importModule, BLUL, GM) {
       if (config.hideToast) return;
       if (this !== BLUL.Logger) {
         const logger = BLUL.Logger ?? console;
-        logger[type === 'success' ? 'log' : type].call(BLUL.Toast, logger === console ? msg.replace(/<br\/?>/g, ' ') : msg);
+        BLUL.Logger[type === 'success' ? 'log' : type].call(BLUL.Toast, logger === console ? msg.replace(/<br\/?>/g, ' ') : msg);
       }
       toastr[type === 'warn' ? 'warning' : type].call(this, msg);
     } catch (error) {

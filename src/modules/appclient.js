@@ -24,15 +24,9 @@ const config = {
   data: []
 };
 export default async function (importModule, BLUL, GM) {
-  await (async () => {
-    BLUL.RESOURCE['spark-md5'] = 'https://cdn.bootcdn.net/ajax/libs/spark-md5/3.0.0/spark-md5.min.js';
-    BLUL.RESOURCE.jsencrypt = 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/libs/jsencrypt.min.js';
-    if (await GM.getValue('resetResource')) return;
-    const resource = (await GM.getValue('config'))?.resource;
-    if (!resource) return;
-    if (resource['spark-md5']?.__VALUE__) BLUL.RESOURCE['spark-md5'] = resource['spark-md5'].__VALUE__;
-    if (resource.jsencrypt?.__VALUE__) BLUL.RESOURCE.jsencrypt = resource.jsencrypt.__VALUE__;
-  })();
+  BLUL.addResource('spark-md5', ['https://cdn.bootcdn.net/ajax/libs/spark-md5/3.0.0/spark-md5.min.js', 'https://cdn.jsdelivr.net/npm/spark-md5@3.0.1/spark-md5.min.js']);
+  BLUL.addResource('jsencrypt', ['https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/libs/jsencrypt.min.js']);
+
   const Util = BLUL.Util;
   await importModule('spark-md5');
   const SparkMD5 = window.SparkMD5;
@@ -158,9 +152,6 @@ export default async function (importModule, BLUL, GM) {
   }
 
   BLUL.onpreinit(() => {
-    BLUL.addResource('spark-md5', [BLUL.RESOURCE['spark-md5'], 'https://cdn.jsdelivr.net/npm/spark-md5@3.0.1/spark-md5.min.js']);
-    BLUL.addResource('jsencrypt', [BLUL.RESOURCE.jsencrypt]);
-
     BLUL.Config.addItem('appClient', 'App客户端设置', config.appClient, { tag: 'input', attribute: { type: 'checkbox' } });
     BLUL.Config.addItem('appClient.params', '参数设置', config.params, {
       tag: 'input',

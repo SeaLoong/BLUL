@@ -58,10 +58,10 @@ B站直播区用户脚本库
 (async function () {
   BLUL.NAME = 'BLRHH';
   // 设置自己脚本的根目录，如果是本地模式则可以不设置
-  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/Bilibili-LRHH@dev/src'); // 不能加 await， 会导致阻塞
+  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/Bilibili-LRHH@dev/src');
   // 加载自己的模块
   const importModule = BLUL.importModule;
-  importModule('MyModule'); // 不能加 await， 会导致阻塞
+  importModule('MyModule'); // 此时返回值无意义
   /*
   做一些其他的前置操作
   */
@@ -90,10 +90,10 @@ B站直播区用户脚本库
     return;
   }
   // 设置自己脚本的根目录，如果是本地模式则可以不设置
-  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/Bilibili-LRHH@dev/src'); // 甚至你可以加上await 保证先后顺序
+  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/Bilibili-LRHH@dev/src');
   // 加载自己的模块
   const importModule = BLUL.importModule;
-  importModule('MyModule'); // 同样你也可以加上 await 保证先后顺序
+  importModule('MyModule'); // 你可以加上 await 保证先后顺序，因为现在这是一个异步函数，此时返回值为模块返回的内容
   /*
   一般来说这里已经没有需要执行代码的地方，因为各个模块应当在 run 事件中执行模块功能
   */
@@ -154,9 +154,9 @@ BLUL.onpostinit(async (BLUL, GM) => {});
 BLUL.onrun(async (BLUL, GM) => {});
 ```
 
-#### `BLUL.addResource(name, urls, [displayName])`
+#### `async BLUL.addResource(name, urls, [displayName])`
 
-增加一个脚本加载源。
+增加一个脚本加载源，可以使用 await 来保证按顺序读取配置项中的源。
 
 + 参数
 
@@ -166,7 +166,7 @@ BLUL.onrun(async (BLUL, GM) => {});
 >  
 > **[displayName]** ***(string)***: 设置项显示给用户的名称，默认与 `name` 相同。
 
-#### `BLUL.setBase(urls)`
+#### `async BLUL.setBase(urls)`
 
 设置脚本加载源的根目录，该函数只能执行一次。
 
@@ -174,9 +174,9 @@ BLUL.onrun(async (BLUL, GM) => {});
 
 > **urls** ***(string|Array)***: URL字符串或可选URL的数组。
 
-#### `BLUL.importModule(name)`
+#### `async BLUL.importModule(name)`
 
-加载模块。
+加载模块，在 `run` 执行结束后可以使用 await 来保证加载顺序。
 
 + 参数
 

@@ -24,7 +24,7 @@ export default async function (importModule, BLUL, GM) {
   const logs = [];
   let keepScroll = true;
 
-  function log (msg, type = 'success') {
+  function log (msg, type = 'success', toconsole = config.outputConsole || this === BLUL.Toast || type === 'error' || type === 'warn') {
     try {
       while (logs.length >= config.maxLog) {
         logs.shift().remove();
@@ -45,7 +45,7 @@ export default async function (importModule, BLUL, GM) {
       if (this !== BLUL.Toast && (type === 'error' || type === 'warn')) {
         BLUL.Toast[type].call(BLUL.Logger, msg);
       }
-      if (config.outputConsole || type === 'error' || type === 'warn') {
+      if (toconsole) {
         msg = msg.replace(/<br\/?>/g, ' ');
         console[type === 'success' ? 'log' : type].call(this, dateTime ? `[${BLUL.NAME}][${dateTime}]${msg}` : `[${dateTime}]${msg}`);
       }

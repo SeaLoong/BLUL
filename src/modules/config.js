@@ -206,7 +206,7 @@ export default async function (importModule, BLUL, GM) {
       value = {};
     }
     _.assignIn(CONFIG, value);
-    await (BLUL.Config.onload = f => f.call(BLUL.Config, BLUL));
+    BLUL.Config.onload = f => f.call(BLUL.Config, BLUL);
   };
 
   const save = async () => GM.setValue('config', CONFIG);
@@ -414,7 +414,7 @@ export default async function (importModule, BLUL, GM) {
     addItem,
     removeItem
   };
-  BLUL.lazyFn('onload', BLUL.Config);
+  BLUL.lazyFn(BLUL.Config, 'onload');
 
   BLUL.debug('Module Loaded: Config', BLUL.Config);
 
