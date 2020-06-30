@@ -37,33 +37,31 @@ const BLUL = window.BLUL = {
   ENVIRONMENT: GM.info.scriptHandler,
   ENVIRONMENT_VERSION: GM.info.version,
   VERSION: GM.info.script.version,
-  RESOURCE: {
-    base: '',
-    BLULBase: 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src',
-    lodash: 'https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js',
-    toastr: 'https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js',
-    jquery: 'https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js'
-  },
+  RESOURCE: {},
   BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'AppClient'],
   INFO: {}
 };
 
-BLUL.lazyFn = function (name, object) {
+BLUL.lazyFn = function (...args) {
+  let object = BLUL;
+  let name;
+  let promise = false;
+  if (args.length >= 3) [object, name, promise] = args;
+  else if (args.length === 2) [object, name] = args;
+  else [name] = args;
   const list = [];
   let fn;
-  object = object ?? BLUL;
   Object.defineProperty(object, name, {
     configurable: true,
-    get: () => fn ?? ((...args) => new Promise(resolve => list.push({ args, resolve }))),
+    get: () => fn ?? ((...args) => promise ? new Promise(resolve => list.push({ args, resolve })) : list.push({ args })),
     set: f => {
       fn = f;
-      if (!(fn instanceof Function)) return fn;
-      return (async () => {
+      if (fn instanceof Function) {
         for (const { resolve, args } of list) {
-          resolve(await fn.apply(object, args));
+          const v = fn.apply(object, args);
+          if (resolve) resolve(v);
         }
-        return fn;
-      })();
+      }
     }
   });
 };
@@ -118,7 +116,7 @@ BLUL.createImportModuleFromCodeFunc = function (context, keepContext = false) {
   return importModule;
 };
 
-BLUL.lazyFn('addResource');
+BLUL.lazyFn('__addResourceConfig');
 BLUL.lazyFn('setBase');
 BLUL.lazyFn('importModule');
 BLUL.lazyFn('onupgrade');
@@ -126,6 +124,17 @@ BLUL.lazyFn('onpreinit');
 BLUL.lazyFn('oninit');
 BLUL.lazyFn('onpostinit');
 BLUL.lazyFn('onrun');
+
+BLUL.addResource = function (name, urls, displayName) {
+  BLUL.RESOURCE[name] = urls instanceof Array ? urls[0] : urls;
+  BLUL.__addResourceConfig(name, urls, displayName);
+  return (async () => {
+    if (await GM.getValue('resetResource')) return;
+    const resource = (await GM.getValue('config'))?.resource;
+    if (!resource) return;
+    if (resource[name]?.__VALUE__) BLUL.RESOURCE[name] = resource[name]?.__VALUE__;
+  })();
+};
 
 // 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
 BLUL.run = async (options) => {
@@ -147,30 +156,19 @@ BLUL.run = async (options) => {
     window.location.reload(true);
   });
   const unregisterMenuCmd = async () => {
-    BLUL.debug('BLUL.onpostinit: resetResource');
+    BLUL.debug('unregisterMenuCmd');
     if (await GM.getValue('resetResource')) {
       await BLUL.Config.reset('resource', true);
       await GM.deleteValue('resetResource');
     }
     await GM.unregisterMenuCommand?.(resetResourceMenuCmdId); // eslint-disable-line no-unused-expressions
   };
-  if (!await GM.getValue('resetResource')) {
-    const resource = (await GM.getValue('config'))?.resource;
-    if (resource) {
-      for (const key in BLUL.RESOURCE) {
-        if (resource[key]) BLUL.RESOURCE[key] = resource[key].__VALUE__;
-      }
-    }
-  }
 
-  BLUL.onpreinit(() => {
-    BLUL.debug('BLUL.onpreinit: resetResource');
-    BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
-    BLUL.addResource('BLULBase', [BLUL.RESOURCE.BLULBase, 'https://raw.githubusercontent.com/SeaLoong/BLUL/master/src'], 'BLUL根目录');
-    BLUL.addResource('lodash', [BLUL.RESOURCE.lodash, 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js', 'https://raw.githubusercontent.com/lodash/lodash/4.17.15/dist/lodash.js']);
-    BLUL.addResource('toastr', [BLUL.RESOURCE.toastr, 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
-    BLUL.addResource('jquery', [BLUL.RESOURCE.jquery, 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
-  });
+  BLUL.addResource('BLULBase', ['https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src'], 'BLUL根目录');
+  BLUL.addResource('lodash', ['https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js', 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js']);
+  BLUL.addResource('toastr', ['https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js', 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
+  BLUL.addResource('jquery', ['https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js', 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);
+
   BLUL.onpostinit(unregisterMenuCmd);
 
   const importModule = BLUL.createImportModuleFunc([BLUL, GM]);
@@ -242,10 +240,10 @@ BLUL.run = async (options) => {
   await importModule('Request');
   await importModule('AppClient');
 
-  await (BLUL.addResource = (name, urls, displayName) => {
-    const url = urls instanceof Array ? urls[0] : urls;
-    BLUL.RESOURCE[name] = url;
-    BLUL.Config.addItem(`resource.${name}`, displayName ?? name, url, {
+  BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
+
+  BLUL.__addResourceConfig = (name, urls, displayName = name) => {
+    BLUL.Config.addItem(`resource.${name}`, displayName, BLUL.RESOURCE[name], {
       tag: 'input',
       list: urls instanceof Array ? urls : undefined,
       corrector: v => {
@@ -257,11 +255,11 @@ BLUL.run = async (options) => {
     BLUL.Config.onload(() => {
       BLUL.RESOURCE[name] = BLUL.Config.get(`resource.${name}`);
     });
-  });
+  };
 
-  await (BLUL.setBase = _.once(urls => BLUL.addResource('base', urls, '根目录')));
+  BLUL.setBase = _.once(urls => BLUL.addResource('base', urls, '根目录'));
 
-  await (BLUL.importModule = importModule);
+  BLUL.importModule = importModule;
 
   BLUL.INFO.UID = window.BilibiliLive.UID;
   BLUL.INFO.ROOMID = window.BilibiliLive.ROOMID;
@@ -270,15 +268,15 @@ BLUL.run = async (options) => {
   BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
   BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也可以自行请求获取
 
-  const callHandler = f => f.call(BLUL.load, BLUL, GM);
+  const callHandler = f => f.apply(BLUL.load, [BLUL, GM]);
   if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
-    await (BLUL.onupgrade = callHandler);
+    BLUL.onupgrade = callHandler;
     await GM.setValue('version', BLUL.VERSION);
   }
-  await (BLUL.onpreinit = callHandler);
-  await (BLUL.oninit = callHandler);
-  await (BLUL.onpostinit = callHandler);
-  await (BLUL.onrun = callHandler);
+  BLUL.onpreinit = callHandler;
+  BLUL.oninit = callHandler;
+  BLUL.onpostinit = callHandler;
+  BLUL.onrun = callHandler;
   return true;
 };
 
