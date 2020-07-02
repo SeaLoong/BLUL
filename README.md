@@ -193,7 +193,7 @@ BLUL.onrun(async (BLUL, GM) => {});
 >  
 > **[options.debug]** ***(boolean)***: 设置是否为调试模式。
 >  
-> **[options.slient]** ***(boolean)***: 设置是否为静默模式，静默模式下不会显示在 `BLUL.preload`和`BLUL.load` 中的浮动提示。
+> **[options.slient]** ***(boolean)***: 设置是否为静默模式，静默模式下不会显示在加载过程中的浮动提示。
 >  
 > **[options.local]** ***(boolean)***: 设置是否为本地模式。
 >  
@@ -209,7 +209,7 @@ BLUL.onrun(async (BLUL, GM) => {});
 
 + 返回
 
-> ***(boolean)***: 表示是否符合参数要求地执行完毕。
+> ***(boolean)***: 表示是否成功加载。
 
 -----------------------------------------
 

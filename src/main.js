@@ -11,7 +11,7 @@ const BLUL = window.BLUL = {
   ENVIRONMENT_VERSION: GM.info.version,
   VERSION: GM.info.script.version,
   RESOURCE: {},
-  BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'AppClient'],
+  BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'AppClient', 'Worker'],
   INFO: {}
 };
 
@@ -39,6 +39,8 @@ BLUL.lazyFn = function (...args) {
   });
 };
 
+BLUL.getModuleUrl = async (name) => await GM.getResourceUrl(name) ?? BLUL.RESOURCE[name] ?? ((BLUL.BLUL_MODULE_NAMES.includes(name) ? BLUL.RESOURCE.BLULBase : BLUL.RESOURCE.base) + '/modules/' + name.toLowerCase() + '.js');
+
 BLUL.createImportModuleFunc = function (context, keepContext = false) {
   /**
    * 如果需要上下文, Module 应当返回(export default)一个 Function/AsyncFunction, 其参数表示上下文, 且第一个参数是importModule
@@ -48,8 +50,7 @@ BLUL.createImportModuleFunc = function (context, keepContext = false) {
   async function importModule (name, reImport = false) {
     try {
       if (!reImport && importUrlMap.has(name)) return importUrlMap.get(name);
-      const url = await GM.getResourceUrl(name) ?? BLUL.RESOURCE[name] ?? ((BLUL.BLUL_MODULE_NAMES.includes(name) ? BLUL.RESOURCE.BLULBase : (BLUL.RESOURCE.base ?? BLUL.RESOURCE.BLULBase)) + '/modules/' + name.toLowerCase() + '.js');
-      let ret = await import(url);
+      let ret = await import(await BLUL.getModuleUrl(name));
       const def = ret.default;
       if (def instanceof Function) ret = def.apply(def, context);
       ret = await ret;
@@ -107,7 +108,6 @@ BLUL.addResource = async function (name, urls, displayName) {
   if (resource[name]?.__VALUE__) BLUL.RESOURCE[name] = resource[name]?.__VALUE__;
 };
 
-// 返回 true 表示BLUL应当符合要求、符合逻辑地执行完毕，否则返回 false
 BLUL.run = async (options) => {
   const { debug, slient, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
   if (debug) {
@@ -120,7 +120,7 @@ BLUL.run = async (options) => {
   }
 
   // 特殊直播间页面，如 6 55 76
-  if (!loadInSpecial && document.getElementById('player-ctnr')) return true;
+  if (!loadInSpecial && document.getElementById('player-ctnr')) return false;
 
   const resetResourceMenuCmdId = await GM.registerMenuCommand?.('恢复默认源', async () => {
     await GM.setValue('resetResource', true);
