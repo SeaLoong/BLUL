@@ -78,8 +78,8 @@ BLUL.createImportModuleFunc = function (context, keepContext = false) {
     try {
       if (!reImport && importUrlMap.has(name)) return importUrlMap.get(name);
       let ret = await import(await BLUL.getModuleUrl(name));
-      const def = ret.default;
-      if (def instanceof Function) ret = def.apply(def, context);
+      ret = ret?.default ?? ret;
+      if (ret instanceof Function) ret = ret.apply(ret, context);
       ret = await ret;
       importUrlMap.set(name, ret);
       return ret;
