@@ -11,7 +11,7 @@ const BLUL = window.BLUL = {
   ENVIRONMENT_VERSION: GM.info.version,
   VERSION: GM.info.script.version,
   RESOURCE: {},
-  BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'Worker', 'AppClient'],
+  BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'Worker', 'Worker/env', 'Worker/channel', 'AppClient'],
   INFO: {}
 };
 
