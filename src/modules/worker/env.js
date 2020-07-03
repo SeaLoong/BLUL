@@ -37,3 +37,4 @@ onmessage = async e => {
     }
   }
 };
+console.debug('[BLUL] Worker is ready.');

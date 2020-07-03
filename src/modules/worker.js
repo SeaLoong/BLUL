@@ -1,8 +1,13 @@
 export default async function (importModule, BLUL, GM) {
   const Util = BLUL.Util;
 
-  const worker = new Worker(Util.codeToURL(`importScripts('${await BLUL.getModuleUrl('Worker/env')}');`), { type: 'classic', credentials: 'include', name: BLUL.NAME + '-Worker' });
-
+  let worker;
+  try {
+    worker = new Worker(Util.codeToURL(`importScripts('${await BLUL.getModuleUrl('Worker/env')}');`), { type: 'classic', credentials: 'include', name: BLUL.NAME + '-Worker' });
+  } catch (error) {
+    BLUL.Toast.error('Worker加载失败，请检查是否出现插件冲突', '已知冲突的插件有:', 'pakku：哔哩哔哩弹幕过滤器', error);
+    return;
+  }
   let channel;
 
   worker.onerror = worker.onmessageerror = e => BLUL.Toast.error('Worker执行时出现错误', e);
@@ -27,6 +32,8 @@ export default async function (importModule, BLUL, GM) {
       return channel.postIMPORT(await BLUL.getModuleUrl(name));
     }
   };
+
+  BLUL.debug('Module Loaded: Worker', BLUL.Worker);
 
   return BLUL.Worker;
 }
