@@ -11,7 +11,7 @@ const BLUL = window.BLUL = {
   ENVIRONMENT_VERSION: GM.info.version,
   VERSION: GM.info.script.version,
   RESOURCE: {},
-  BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'AppClient', 'Worker'],
+  BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'Worker', 'AppClient'],
   INFO: {}
 };
 
@@ -209,6 +209,7 @@ BLUL.run = async (options) => {
   await importModule('Logger');
   await importModule('Config');
   await importModule('Request');
+  await importModule('Worker');
   await importModule('AppClient');
 
   BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
