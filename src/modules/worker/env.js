@@ -1,13 +1,13 @@
 let BLUL;
 let GM;
 const importUrlMap = new Map();
-const CONTEXT = [importModule];
+const context = [importModule];
 async function importModule (url, reImport = false) {
   if (!reImport && importUrlMap.has(url)) return importUrlMap.get(url);
   if (!url.startsWith('http') && BLUL?.getModuleUrl) url = await BLUL.getModuleUrl(url);
   let ret = await import(url);
-  const def = ret.default;
-  if (def instanceof Function) ret = def.apply(def, CONTEXT);
+  ret = ret?.default ?? ret;
+  if (ret instanceof Function) ret = ret.apply(ret, context);
   ret = await ret;
   importUrlMap.set(url, ret);
   return ret;
@@ -29,7 +29,7 @@ onmessage = async e => {
       channel.onenv = env => {
         [BLUL, GM] = env;
         BLUL.Channel = channel;
-        CONTEXT.push(BLUL, GM);
+        context.push(BLUL, GM);
       };
       channel.onregister = (envi, path) => {};
       postMessage(['CHANNEL']);
