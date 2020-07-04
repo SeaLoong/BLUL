@@ -1,99 +1,100 @@
 /* global _ */
-const clone = value => _.cloneDeepWith(value, v => {
-  if (v instanceof Function) return 'function';
-});
+const recurse = (value, path = '', callFn) => {
+  if (!callFn && value instanceof Function) {
+    return '[CALL]' + path;
+  }
+  if (callFn && typeof value === 'string' && value.startsWith('[CALL]')) {
+    return callFn(value.substring(6));
+  }
+  value = _.clone(value);
+  if (_.isPlainObject(value)) {
+    for (const key in value) {
+      value[key] = recurse(value[key], path ? path + '.' + key : key);
+    }
+  } else if (value instanceof Array) {
+    for (let i = 0; i < value.length; i++) {
+      value[i] = recurse(value[i], path ? path + `[${i}]` : `[${i}]`);
+    }
+  }
+  return value;
+};
 export default function (importModule) {
   return class Channel {
-    ENV = [];
+    env = [];
     worker;
-    onenv = () => {};
-    onregister = () => {};
+    onenv;
     waitingMap = new Map();
     constructor (worker) {
-      const registerFunction = (envi, path = '', entry = this.ENV[envi]) => {
-        if (_.isPlainObject(entry)) {
-          for (const key in entry) {
-            const p = path ? path + '.' + key : key;
-            entry[key] = registerFunction(envi, p, entry[key]);
-          }
-          return entry;
-        } else if (entry instanceof Array) {
-          entry.forEach((v, i) => {
-            const p = path ? path + `[${i}]` : `[${i}]`;
-            entry[i] = registerFunction(envi, p, entry[i]);
-          });
-          return entry;
-        } else if (entry === 'function') {
-          return (...args) => this.postCALL(envi, path, args);
-        }
-      };
       this.worker = worker;
       worker.onmessage = async e => {
         switch (e.data[0]) {
           case 'IMPORT':
-            await importModule(e.data[1]);
-            worker.postMessage(['IMPORTED', e.data[1]]);
+          {
+            const ret = await importModule(e.data[1]);
+            worker.postMessage(['IMPORTED', e.data[1], recurse(ret)]);
             break;
+          }
           case 'IMPORTED':
           {
             const url = e.data[1];
             if (this.waitingMap.has(url)) {
-              const { resolve } = this.waitingMap.get(url);
+              const resolve = this.waitingMap.get(url);
               this.waitingMap.delete(url);
-              resolve(url);
+              resolve(e.data[2]);
             }
             break;
           }
           case 'ENV':
           {
-            for (let i = 1; i < e.data.length; i++) {
-              this.ENV.push(e.data[i]);
+            const callFn = (path) => (...args) => this.postCALL(path, args);
+            this.env[0] = recurse(e.data[1][0], 'BLUL', callFn);
+            this.env[1] = recurse(e.data[1][1], 'GM', callFn);
+            if (this.onenv instanceof Function) this.onenv(this.env);
+            worker.postMessage(['ENVED']);
+            break;
+          }
+          case 'ENVED':
+          {
+            if (this.waitingMap.has('ENV')) {
+              const resolve = this.waitingMap.get('ENV');
+              this.waitingMap.delete('ENV');
+              resolve();
             }
-            this.ENV.forEach((v, i) => {
-              this.ENV[i] = registerFunction(i);
-            });
-            this.onenv(this.ENV);
             break;
           }
           case 'CALL':
           {
-            const ret = _.get(this.ENV[e.data[1]], e.data[2]).apply(this, e.data[4]);
+            const ret = _.get(this.env, e.data[1]).apply(this, e.data[3]);
             if (ret instanceof Promise) {
-              ret.then(value => worker.postMessage(['RETURN', e.data[1], e.data[2], e.data[3], clone(value)]),
-                reason => worker.postMessage(['ERROR', e.data[1], e.data[2], e.data[3], reason.toString()]));
+              ret.then(value => worker.postMessage(['RETURN', e.data[1], e.data[2], recurse(value)]),
+                reason => worker.postMessage(['ERROR', e.data[1], e.data[2], reason.toString()]));
             } else {
               try {
-                worker.postMessage(['RETURN', e.data[1], e.data[2], e.data[3], clone(ret)]);
+                worker.postMessage(['RETURN', e.data[1], e.data[2], recurse(ret)]);
               } catch (error) {
-                worker.postMessage(['ERROR', e.data[1], e.data[2], e.data[3], error.toString()]);
+                worker.postMessage(['ERROR', e.data[1], e.data[2], error.toString()]);
               }
             }
             break;
           }
           case 'RETURN':
           {
-            const key = e.data[1] + e.data[2] + e.data[3];
+            const key = e.data[1] + e.data[2];
             if (this.waitingMap.has(key)) {
               const { resolve } = this.waitingMap.get(key);
               this.waitingMap.delete(key);
-              resolve(e.data[4]);
+              resolve(e.data[3]);
             }
             break;
           }
           case 'ERROR':
           {
-            const key = e.data[1] + e.data[2] + e.data[3];
+            const key = e.data[1] + e.data[2];
             if (this.waitingMap.has(key)) {
               const { reject } = this.waitingMap.get(key);
               this.waitingMap.delete(key);
-              reject(e.data[4]);
+              reject(e.data[3]);
             }
-            break;
-          }
-          case 'REGISTER':
-          {
-            _.set(this.ENV[e.data[1]], e.data[2], registerFunction(e.data[1], e.data[2], e.data[3]));
-            this.onregister(e.data[1], e.data[2]);
             break;
           }
         }
@@ -101,27 +102,26 @@ export default function (importModule) {
     }
 
     postENV (...envs) {
-      return this.worker.postMessage(['ENV', ...clone(envs)]);
+      return new Promise(resolve => {
+        this.waitingMap.set('ENV', resolve);
+        this.worker.postMessage(['ENV', recurse(envs)]);
+      });
     }
 
     postIMPORT (url) {
-      return new Promise((resolve, reject) => {
-        this.waitingMap.set(url, { resolve, reject });
+      return new Promise(resolve => {
+        this.waitingMap.set(url, resolve);
         this.worker.postMessage(['IMPORT', url]);
       });
     }
 
-    postCALL (envi, path, args) {
+    postCALL (path, args) {
       return new Promise((resolve, reject) => {
         let i = 0;
-        while (this.waitingMap.has(envi + path + i)) i++;
-        this.waitingMap.set(envi + path + i, { resolve, reject });
-        this.worker.postMessage(['CALL', envi, path, i, args]);
+        while (this.waitingMap.has(path + i)) i++;
+        this.waitingMap.set(path + i, { resolve, reject });
+        this.worker.postMessage(['CALL', path, i, args]);
       });
-    }
-
-    postREGISTER (envi, path, entry) {
-      return this.worker.postMessage(['REGISTER', envi, path, clone(entry)]);
     }
   };
 }

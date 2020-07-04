@@ -21,7 +21,6 @@ onmessage = async e => {
   switch (e.data[0]) {
     case 'IMPORT':
       await importModule(e.data[1]);
-      postMessage(['IMPORTED', e.data[1]]);
       break;
     case 'CHANNEL':
     {
@@ -31,10 +30,9 @@ onmessage = async e => {
         BLUL.Channel = channel;
         context.push(BLUL, GM);
       };
-      channel.onregister = (envi, path) => {};
-      postMessage(['CHANNEL']);
       break;
     }
   }
+  postMessage([e.data[1]]);
 };
 console.debug('[BLUL] Worker is ready.');
