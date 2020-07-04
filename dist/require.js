@@ -220,7 +220,7 @@ BLUL.run = async (options) => {
       await GM.setValue('eula', false);
     }
     if (!await GM.getValue('eula')) {
-      const dialog = new BLUL.Dialog((await Util.result(EULA)).replace(/\n/g, '<br>'), '最终用户许可协议');
+      const dialog = new BLUL.Dialog(await Util.result(EULA), '最终用户许可协议');
       dialog.addButton('我同意', () => dialog.close(true));
       dialog.addButton('我拒绝', () => dialog.close(false), 1);
       if (!await dialog.show()) {
