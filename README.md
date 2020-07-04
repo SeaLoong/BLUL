@@ -161,6 +161,22 @@ BLUL.onpostinit(async (BLUL, GM) => {});
 BLUL.onrun(async (BLUL, GM) => {});
 ```
 
+#### 初始信息
+
+```javascript
+BLUL.NAME;
+BLUL.ENVIRONMENT;
+BLUL.ENVIRONMENT_VERSION;
+BLUL.VERSION;
+BLUL.INFO;
+BLUL.INFO.CSRF;
+BLUL.INFO.UID;
+BLUL.INFO.ROOMID;
+BLUL.INFO.ANCHOR_UID;
+BLUL.INFO.SHORT_ROOMID;
+BLUL.INFO.VISIT_ID;
+```
+
 #### `async BLUL.addResource(name, urls, [displayName=name])`
 
 增加一个脚本加载源，可以使用 await 来保证读取到配置项中的源。
