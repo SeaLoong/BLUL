@@ -44,6 +44,10 @@ B站直播区用户脚本库
 // @resource     Logger https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/logger.js
 // @resource     Config https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/config.js
 // @resource     Request https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/request.js
+// @resource     Worker https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/worker.js
+// @resource     Worker/env https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/worker/env.js
+// @resource     Worker/channel https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/worker/channel.js
+// @resource     AppClient https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/appclient.js
 ```
 
 然后启用脚本并打开受支持的页面，你应当会看到在偏右上方有 **弹幕**、**日志**、**设置** 等选项
@@ -184,6 +188,10 @@ BLUL.onrun(async (BLUL, GM) => {});
 + 参数
 
 > **name** ***(string)***: 模块名。
+
++ 返回
+
+> ***(\*)***: 模块返回的内容。
 
 #### `async BLUL.run([options={}])`
 
@@ -882,3 +890,17 @@ BLUL.Config.onload(async function (BLUL) {
 > **f** ***(Function)***: 待取消执行的函数。
 
 -----------------------------------------
+
+### **Worker**
+
+#### `async BLUL.Worker.importModule(name)`
+
+在 Worker 中加载模块。
+
++ 参数
+
+> **name** ***(string)***: 模块名。
+
++ 返回
+
+> ***(\*)***: 模块返回的内容。
