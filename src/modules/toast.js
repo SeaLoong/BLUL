@@ -54,7 +54,7 @@ export default async function (importModule, BLUL, GM) {
     return toast.call(this, msgs.join('<br>'), 'error');
   }
 
-  config.hideToast = (await GM.getValue('config'))?.hideToast ?? false;
+  config.hideToast = (await GM.getValue('config'))?.hideToast?.__VALUE__ ?? false;
 
   BLUL.onpreinit(() => {
     BLUL.Config.addItem('hideToast', '隐藏浮动提示', false, { tag: 'input', title: '浮动提示就是会在右上角显示的那个框框', attribute: { type: 'checkbox' } });
