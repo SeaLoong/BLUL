@@ -1,10 +1,9 @@
-let BLUL;
-let GM;
+let ENV;
 const importUrlMap = new Map();
 const context = [importModule];
 async function importModule (url, reImport = false) {
   if (!reImport && importUrlMap.has(url)) return importUrlMap.get(url);
-  if (!url.startsWith('data:') && !url.startsWith('http') && BLUL?.getResourceUrl) url = await BLUL.getResourceUrl(url);
+  if (!url.startsWith('data:') && !url.startsWith('http') && ENV?.[0]?.getResourceUrl) url = await ENV[0].getResourceUrl(url);
   let ret = await import(url);
   ret = ret?.default ?? ret;
   if (ret instanceof Function) ret = ret.apply(ret, context);
@@ -26,9 +25,9 @@ onmessage = async e => {
     {
       const channel = new (await importModule(e.data[1]))(self);
       channel.onenv = env => {
-        [BLUL, GM] = env;
-        BLUL.Channel = channel;
-        context.push(BLUL, GM);
+        ENV = env;
+        ENV[0].Channel = channel;
+        context.push(...ENV);
       };
       break;
     }
