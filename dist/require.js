@@ -66,7 +66,7 @@ BLUL.lazyFn = function (...args) {
   });
 };
 
-BLUL.getModuleUrl = async (name) => await GM.getResourceUrl(name) ?? BLUL.RESOURCE[name] ?? ((BLUL.BLUL_MODULE_NAMES.includes(name) ? BLUL.RESOURCE.BLULBase : BLUL.RESOURCE.base) + '/modules/' + name.toLowerCase() + '.js');
+BLUL.getResourceUrl = async (name) => await GM.getResourceUrl(name) ?? BLUL.RESOURCE[name] ?? ((BLUL.BLUL_MODULE_NAMES.includes(name) ? BLUL.RESOURCE.BLULBase : BLUL.RESOURCE.base) + '/modules/' + name.toLowerCase() + '.js');
 
 BLUL.createImportModuleFunc = function (context, keepContext = false) {
   /**
@@ -77,7 +77,7 @@ BLUL.createImportModuleFunc = function (context, keepContext = false) {
   async function importModule (name, reImport = false) {
     try {
       if (!reImport && importUrlMap.has(name)) return importUrlMap.get(name);
-      let ret = await import(await BLUL.getModuleUrl(name));
+      let ret = await import(await BLUL.getResourceUrl(name));
       ret = ret?.default ?? ret;
       if (ret instanceof Function) ret = ret.apply(ret, context);
       ret = await ret;
