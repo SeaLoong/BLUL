@@ -31,7 +31,8 @@ export default function (importModule) {
           case 'IMPORT':
           {
             const ret = await importModule(e.data[1]);
-            worker.postMessage(['IMPORTED', e.data[1], recurse(ret, 'BLUL')]);
+            if (ret?.NAME) this.env[ret.NAME] = ret;
+            worker.postMessage(['IMPORTED', e.data[1], recurse(ret, ret?.NAME)]);
             break;
           }
           case 'IMPORTED':
@@ -40,7 +41,7 @@ export default function (importModule) {
             if (this.waitingMap.has(url)) {
               const resolve = this.waitingMap.get(url);
               this.waitingMap.delete(url);
-              resolve(recurse(e.data[2], 'BLUL', (path) => (...args) => this.postCALL(path, args)));
+              resolve(recurse(e.data[2], '', (path) => (...args) => this.postCALL(path, args)));
             }
             break;
           }
@@ -64,7 +65,7 @@ export default function (importModule) {
           }
           case 'CALL':
           {
-            const ret = _.get(this.env, e.data[1]).apply(this, e.data[3]);
+            const ret = _.get(this.env, e.data[1])?.apply(this, e.data[3]);
             if (ret instanceof Promise) {
               ret.then(value => worker.postMessage(['RETURN', e.data[1], e.data[2], recurse(value)]),
                 reason => worker.postMessage(['ERROR', e.data[1], e.data[2], reason.toString()]));
