@@ -3,7 +3,7 @@ export default async function (importModule, BLUL, GM) {
 
   let worker;
   try {
-    worker = new Worker(Util.codeToURL(`importScripts('${await BLUL.getModuleUrl('Worker/env')}');`), { type: 'classic', credentials: 'include', name: BLUL.NAME + '-Worker' });
+    worker = new Worker(Util.codeToURL(`importScripts('${await BLUL.getResourceUrl('Worker/env')}');`), { type: 'classic', credentials: 'include', name: BLUL.NAME + '-Worker' });
   } catch (error) {
     BLUL.Toast.error('Worker加载失败，请检查是否出现插件冲突', '已知冲突的插件有:', 'pakku：哔哩哔哩弹幕过滤器', error);
     return;
@@ -23,7 +23,7 @@ export default async function (importModule, BLUL, GM) {
   };
 
   const initImport = async (name, op = 'IMPORT') => {
-    const url = await BLUL.getModuleUrl(name);
+    const url = await BLUL.getResourceUrl(name);
     worker.postMessage([op, url]);
     return new Promise(resolve => initUrlMap.set(url, resolve));
   };
@@ -36,7 +36,7 @@ export default async function (importModule, BLUL, GM) {
 
   BLUL.Worker = {
     importModule: async (name) => {
-      return channel.postIMPORT(await BLUL.getModuleUrl(name));
+      return channel.postIMPORT(await BLUL.getResourceUrl(name));
     }
   };
 

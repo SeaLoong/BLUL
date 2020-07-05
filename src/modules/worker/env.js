@@ -4,7 +4,7 @@ const importUrlMap = new Map();
 const context = [importModule];
 async function importModule (url, reImport = false) {
   if (!reImport && importUrlMap.has(url)) return importUrlMap.get(url);
-  if (!url.startsWith('http') && BLUL?.getModuleUrl) url = await BLUL.getModuleUrl(url);
+  if (!url.startsWith('http') && BLUL?.getResourceUrl) url = await BLUL.getResourceUrl(url);
   let ret = await import(url);
   ret = ret?.default ?? ret;
   if (ret instanceof Function) ret = ret.apply(ret, context);
