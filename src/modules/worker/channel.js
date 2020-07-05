@@ -9,11 +9,11 @@ const recurse = (value, path = '', callFn) => {
   value = _.clone(value);
   if (_.isPlainObject(value)) {
     for (const key in value) {
-      value[key] = recurse(value[key], path ? path + '.' + key : key);
+      value[key] = recurse(value[key], path ? path + '.' + key : key, callFn);
     }
   } else if (value instanceof Array) {
     for (let i = 0; i < value.length; i++) {
-      value[i] = recurse(value[i], path ? path + `[${i}]` : `[${i}]`);
+      value[i] = recurse(value[i], path ? path + `[${i}]` : `[${i}]`, callFn);
     }
   }
   return value;
