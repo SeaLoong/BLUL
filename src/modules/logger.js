@@ -37,10 +37,12 @@ export default async function (importModule, BLUL, GM) {
       }
       element.append(msg);
       logs.push(element);
-      divLogger.append(element);
-      // 滚动到最底部
-      if (keepScroll) {
-        divLogger.scrollTop(divLogger.prop('scrollHeight') - divLogger.prop('clientHeight'));
+      if (divLogger) {
+        divLogger.append(element);
+        // 滚动到最底部
+        if (keepScroll) {
+          divLogger.scrollTop(divLogger.prop('scrollHeight') - divLogger.prop('clientHeight'));
+        }
       }
       if (this !== BLUL.Toast && (type === 'error' || type === 'warn')) {
         BLUL.Toast[type].call(BLUL.Logger, msg);
