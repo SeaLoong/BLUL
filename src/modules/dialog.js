@@ -14,7 +14,7 @@ export default async function (importModule, BLUL, GM) {
   .${cssDialog} { display: table; position: fixed; height: 100%; width: 100%; top: 0; left: 0; font-size: 12px; z-index: 10000; background-color: rgba(0,0,0,.5); }
   .${cssDialogPosition} { display: table-cell; vertical-align: middle; }
   .${cssDialogWidth} { margin: auto; width: fit-content; max-width: 80%; min-width: 30%; }
-  .${cssDialogStyle} { position: relative; top: 50%; padding: 20px; border-radius: 5px; background-color: #fff; box-shadow: 0 0 5em 0.5em rgba(0,0,0,.2); word-wrap: break-word; word-break: break-word; animation: move-in-top cubic-bezier(.22,.58,.12,.98) .4s; font-size: 15px; line-height: 1.5; }
+  .${cssDialogStyle} { position: relative; top: 50%; padding: 20px; border-radius: 5px; background-color: #fff; box-shadow: 0 0 5em 0.5em rgba(0,0,0,.2); word-wrap: break-word; word-break: break-word; animation: move-in-top cubic-bezier(.22,.58,.12,.98) .4s; font-size: 14px; line-height: 1.4; }
   .${cssDialogTitle} { position: relative; padding-bottom: 5px; }
   .${cssDialogTitleText} { margin: 0; color: #23ade5; font-weight: 400; font-size: 20px; }
   .${cssDialogContent} { overflow: auto; margin: 14px; }

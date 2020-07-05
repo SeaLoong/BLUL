@@ -20,7 +20,7 @@ export default async function (importModule, BLUL, GM) {
   .${cssConfigGroupItem} { padding: 0 8px 4px 8px; border: 1px solid #c8c8c8; border-top: none; }
   .${cssSelect} { margin: -1px 0 -1px 8px; }
   .${cssInputButton} {  }
-  .${cssInputCheckbox} { vertical-align: bottom; margin: 0 8px 0 0; height: 16px; width: 16px; }
+  .${cssInputCheckbox} { vertical-align: bottom; margin: 0 8px 0 0; height: 18px; width: 18px; }
   .${cssInputTextbox} { margin: -1px 0 -1px 8px; padding: 0; height: 19px; }
   .${cssInputTextbox}.number { width: 80px; }
   .${cssInputTextbox}.tel { width: 80px; }
