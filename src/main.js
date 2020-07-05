@@ -50,12 +50,26 @@ BLUL.createImportModuleFunc = function (context, keepContext = false) {
   async function importModule (name, reImport = false) {
     try {
       if (!reImport && importUrlMap.has(name)) return importUrlMap.get(name);
-      let ret = await import(await BLUL.getResourceUrl(name));
-      ret = ret?.default ?? ret;
-      if (ret instanceof Function) ret = ret.apply(ret, context);
-      ret = await ret;
-      importUrlMap.set(name, ret);
-      return ret;
+      const url = await BLUL.getResourceUrl(name);
+      try {
+        let ret = await import(url);
+        ret = ret?.default ?? ret;
+        if (ret instanceof Function) ret = ret.apply(ret, context);
+        ret = await ret;
+        importUrlMap.set(name, ret);
+        return ret;
+      } catch (error) {
+        return new Promise((resolve, reject) => {
+          const elem = document.createElement('script');
+          elem.onerror = reject;
+          elem.onload = () => {
+            importUrlMap.set(name, undefined);
+            resolve();
+          };
+          document.body.appendChild(elem);
+          elem.src = url;
+        });
+      }
     } catch (error) {
       (BLUL.Toast ?? console).error('模块导入失败', error);
     }
