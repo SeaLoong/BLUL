@@ -32,6 +32,7 @@ export default async function (importModule, BLUL, GM) {
   await initImport('Worker/channel', 'CHANNEL');
 
   const channel = new (await importModule('Worker/channel'))(worker);
+  channel.env.push(BLUL, GM);
   await channel.postENV(BLUL, GM);
 
   BLUL.Worker = {
