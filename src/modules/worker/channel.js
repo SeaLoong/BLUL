@@ -31,7 +31,7 @@ export default function (importModule) {
           case 'IMPORT':
           {
             const ret = await importModule(e.data[1]);
-            worker.postMessage(['IMPORTED', e.data[1], recurse(ret)]);
+            worker.postMessage(['IMPORTED', e.data[1], recurse(ret, 'BLUL')]);
             break;
           }
           case 'IMPORTED':
@@ -40,7 +40,7 @@ export default function (importModule) {
             if (this.waitingMap.has(url)) {
               const resolve = this.waitingMap.get(url);
               this.waitingMap.delete(url);
-              resolve(e.data[2]);
+              resolve(recurse(e.data[2], 'BLUL', (path) => (...args) => this.postCALL(path, args)));
             }
             break;
           }
