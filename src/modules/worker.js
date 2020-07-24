@@ -5,13 +5,13 @@ export default async function (importModule, BLUL, GM) {
   try {
     worker = new Worker(Util.codeToURL(`importScripts('${await BLUL.getResourceUrl('Worker/env')}');`), { type: 'classic', credentials: 'include', name: BLUL.NAME + '-Worker' });
   } catch (error) {
-    BLUL.Toast.error('Worker加载失败，请检查是否出现插件冲突', '已知冲突的插件有:', 'pakku：哔哩哔哩弹幕过滤器', error);
+    BLUL.Logger.error('Worker加载失败，请检查是否出现插件冲突', '已知冲突的插件有:', 'pakku：哔哩哔哩弹幕过滤器', error);
     return;
   }
 
   const initUrlMap = new Map();
 
-  worker.onerror = worker.onmessageerror = e => BLUL.Toast.error('Worker执行时出现错误', e);
+  worker.onerror = worker.onmessageerror = e => BLUL.Logger.error('Worker执行时出现错误', e);
 
   worker.onmessage = async e => {
     if (!(e.data instanceof Array) || e.data.length < 1) return;
