@@ -186,8 +186,7 @@ export default async function (importModule, BLUL, GM) {
     BLUL.Config.addItem('appToken.fingerprint', 'fingerprint', config.fingerprint, { tag: 'input', attribute: { type: 'text' } });
     BLUL.Config.addItem('appToken.access_token', 'access_token', config.access_token, { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
     BLUL.Config.addItem('appToken.refresh_token', 'refresh_token', config.refresh_token, { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
-    BLUL.Config.addItem('appToken.expires_in', 'expires_in', config.expires_in, { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
-    BLUL.Config.addItem('appToken.ts', '过期时间戳', config.ts, { tag: 'input', attribute: { type: 'text' } });
+    BLUL.Config.addItem('appToken.ts', '过期时间戳', config.ts, { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
 
     BLUL.Config.onload(() => {
       config.buvid = BLUL.Config.get('appToken.buvid');
