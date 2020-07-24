@@ -115,13 +115,14 @@ export default async function (importModule, BLUL, GM) {
     BLUL.debug(NAME, 'getNewAccessToken');
     let obj = await qrcode.auth_code();
     if (obj.code !== 0) return;
-    // obj.url 可用于生成二维码扫码登录，等同于完成了下面这一步
-    obj = await qrcode.confirm(obj.auth_code, BLUL.INFO.CSRF);
+    // obj.data.url 可用于生成二维码扫码登录，等同于完成了下面这一步
+    const auth_code = obj.data.auth_code;
+    obj = await qrcode.confirm(auth_code, BLUL.INFO.CSRF);
     if (obj.code !== 0) return;
     let cnt = 5;
     while (cnt--) {
       await Util.sleep(800);
-      obj = await qrcode.poll(obj.auth_code);
+      obj = await qrcode.poll(auth_code);
       if (obj.code === 0) {
         config.access_token = obj?.data?.access_token;
         config.refresh_token = obj?.data?.refresh_token;
