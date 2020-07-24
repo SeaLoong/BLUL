@@ -36,7 +36,7 @@ export default async function (importModule, BLUL, GM) {
       details.url += '?' + Util.toURLSearchParamString(details.search);
     }
     if (details.method === 'POST' && !_.isEmpty(details.data)) {
-      _.defaultsDeep(details, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+      _.defaultsDeep(details, { headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' } });
     }
     const responseType = details.responseType;
     // eslint-disable-next-line no-unmodified-loop-condition
@@ -95,8 +95,8 @@ export default async function (importModule, BLUL, GM) {
       init.url += '?' + Util.toURLSearchParamString(init.search);
     }
     if (init.method === 'POST' && !_.isEmpty(init.data)) {
-      _.defaultsDeep(init, { headers: { 'content-type': 'application/x-www-form-urlencoded' } });
-      if (init.headers?.['content-type'] === 'application/x-www-form-urlencoded') {
+      _.defaultsDeep(init, { headers: { 'content-type': 'application/x-www-form-urlencoded; charset=utf-8' } });
+      if (init.headers?.['content-type']?.includes('application/x-www-form-urlencoded')) {
         init.body = Util.toURLSearchParamString(init.data);
       } else {
         init.body = init.data;

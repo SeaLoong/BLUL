@@ -50,7 +50,7 @@ export default async function (importModule, BLUL, GM) {
     buvid: config.buvid,
     env: 'prod',
     'app-key': 'android_tv_yst',
-    'user-agent': 'Mozilla/5.0 BiliTV/1.2.8 os/android model/MI%20NOTE%203 mobi_app/android_tv_yst build/102800 channel/master innerVer/102800 osVer/9 network/2'
+    'user-agent': 'Mozilla/5.0 BiliTV/1.2.8 os/android mobi_app/android_tv_yst build/102800 channel/master innerVer/102800 osVer/9 network/2'
   };
 
   const sign = (params) => {
