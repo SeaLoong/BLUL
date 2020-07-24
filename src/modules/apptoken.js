@@ -34,8 +34,8 @@ export default async function (importModule, BLUL, GM) {
     channel: 'master',
     device: 'Xiaomi',
     device_id: config.device_id,
-    device_name: 'Redmi K30',
-    device_platform: 'Android10XiaomiRedmi K30',
+    device_name: 'RedmiK30',
+    device_platform: 'Android10XiaomiRedmiK30',
     fingerprint: config.fingerprint,
     guid: config.buvid,
     local_fingerprint: config.fingerprint,
@@ -47,10 +47,11 @@ export default async function (importModule, BLUL, GM) {
   };
 
   const headers = {
-    buvid: config.buvid,
+    Accept: null,
+    Buvid: config.buvid,
     env: 'prod',
-    'app-key': 'android_tv_yst',
-    'user-agent': 'Mozilla/5.0 BiliTV/1.2.8 os/android mobi_app/android_tv_yst build/102800 channel/master innerVer/102800 osVer/9 network/2'
+    'App-Key': 'android_tv_yst',
+    'User-Agent': 'Mozilla/5.0 BiliTV/1.2.8 os/android mobi_app/android_tv_yst build/102800 channel/master innerVer/102800 osVer/9 network/2'
   };
 
   const sign = (params) => {

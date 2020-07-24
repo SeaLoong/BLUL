@@ -26,8 +26,6 @@ export default async function (importModule, BLUL, GM) {
       method: 'GET',
       headers: {
         Accept: 'application/json, text/plain, */*',
-        'Cache-Control': 'no-cache',
-        Pragma: 'no-cache',
         Cookie: document.cookie
       },
       responseType: 'json'
@@ -87,7 +85,6 @@ export default async function (importModule, BLUL, GM) {
       headers: {
         accept: 'application/json, text/plain, */*'
       },
-      cache: 'no-cache',
       credentials: 'include',
       referrer: ''
     });
