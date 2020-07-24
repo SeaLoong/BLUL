@@ -11,7 +11,7 @@ const BLUL = window.BLUL = {
   ENVIRONMENT_VERSION: GM.info.version,
   VERSION: GM.info.script.version,
   RESOURCE: {},
-  BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'Worker', 'Worker/env', 'Worker/channel', 'AppClient'],
+  BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'Worker', 'Worker/env', 'Worker/channel', 'AppToken'],
   INFO: {}
 };
 
@@ -114,6 +114,7 @@ BLUL.lazyFn('onpostinit');
 BLUL.lazyFn('onrun');
 
 BLUL.addResource = async function (name, urls, displayName) {
+  if (BLUL.RESOURCE[name] !== undefined) return;
   BLUL.RESOURCE[name] = urls instanceof Array ? urls[0] : urls;
   BLUL.__addResourceConfig(name, urls, displayName);
   if (await GM.getValue('resetResource')) return;
@@ -224,7 +225,7 @@ BLUL.run = async (options) => {
   await importModule('Config');
   await importModule('Request');
   await importModule('Worker');
-  await importModule('AppClient');
+  await importModule('AppToken');
 
   BLUL.Config.addItem('resource', '自定义源', false, { tag: 'input', help: '该设置项下的各设置项只在没有设置对应的 @resource 时有效。<br>此项直接影响脚本的加载，URL不正确或访问速度太慢均可能导致不能正常加载。<br>需要重置源可点击油猴图标再点击此脚本下的"恢复默认源"来重置。', attribute: { type: 'checkbox' } });
 

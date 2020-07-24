@@ -48,6 +48,21 @@ function getCookie (sKey) {
   return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
 }
 
+const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+function randomID (length) {
+  let ret = chars[Math.floor(Math.random() * 26) + 10];
+  while (--length > 0) ret += chars[Math.floor(Math.random() * 61)];
+  return ret;
+}
+
+function int2str (x, length) {
+  const s = x.toString();
+  if (length > s.length) {
+    return '0'.repeat(length - s.length) + s;
+  }
+  return s;
+}
+
 // version1 > version2 返回大于0的数
 // version1 === version2 返回0
 // version1 < version2 返回小于0的数
@@ -233,6 +248,8 @@ export default {
   blob2DataURL,
   toURLSearchParamString,
   getCookie,
+  randomID,
+  int2str,
   compareVersion,
   beforeNow,
   isToday,

@@ -1,3 +1,6 @@
+/** Discard Code  废弃的代码
+ *  考虑到浏览器情形以及实现复杂度，这部分代码及相关功能已被废弃
+ */
 /* global _ */
 const NAME = 'App客户端';
 const defaultParams = {
@@ -30,20 +33,17 @@ export default async function (importModule, BLUL, GM) {
   const Util = BLUL.Util;
   await importModule('spark-md5');
   const SparkMD5 = window.SparkMD5;
-  window.SparkMD5 = undefined;
   await importModule('jsencrypt');
   const JSEncrypt = window.JSEncrypt;
-  window.JSEncrypt = undefined;
 
   const sign = (params) => {
-    let _params = _.defaultsDeep({}, params);
-    _.defaultsDeep(_params, defaultParams);
-    _params.ts = Math.round(Date.now() / 1e3);
-    _params = Util.sortByKey(_params);
-    console.log(_params);
-    const str = Util.toURLSearchParamString(_params) + config.appSecret[_params.appkey];
-    _params.sign = SparkMD5.hash(str);
-    return _params;
+    let p = _.defaultsDeep({}, params);
+    _.defaultsDeep(p, defaultParams);
+    p.ts = Math.round(Date.now() / 1e3);
+    p = Util.sortByKey(p);
+    console.log(p);
+    const pStr = Util.toURLSearchParamString(p);
+    return pStr + '&sign=' + SparkMD5.hash(pStr + config.appSecret[p.appkey]);
   };
 
   class AppClient {
@@ -125,6 +125,7 @@ export default async function (importModule, BLUL, GM) {
         }, this.cookieObject))
       });
       const obj = await response.json();
+      return obj;
     }
 
     async updateLoginData (data) {

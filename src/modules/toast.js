@@ -7,7 +7,6 @@ export default async function (importModule, BLUL, GM) {
   await GM.addStyle(css);
 
   const toastr = window.toastr;
-  window.toastr = undefined;
   toastr.options = {
     closeButton: false,
     debug: false,
