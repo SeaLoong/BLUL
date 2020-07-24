@@ -192,6 +192,9 @@ export default async function (importModule, BLUL, GM) {
       config.buvid = BLUL.Config.get('appToken.buvid');
       config.device_id = BLUL.Config.get('appToken.device_id');
       config.fingerprint = BLUL.Config.get('appToken.fingerprint');
+      config.access_token = BLUL.Config.get('appToken.access_token');
+      config.refresh_token = BLUL.Config.get('appToken.refresh_token');
+      config.ts = BLUL.Config.get('appToken.ts');
 
       defaultParams.buvid = config.buvid;
       defaultParams.guid = config.buvid;
