@@ -65,18 +65,18 @@ export default async function (importModule, BLUL, GM) {
   /* eslint-disable camelcase */
   const qrcode = {
     auth_code: async () => {
-      const r = await BLUL.Request.fetch({
+      const r = await BLUL.Request.monkey({
         method: 'POST',
-        url: 'https://passport.snm0516.aisee.tv/x/passport-tv-login/qrcode/auth_code',
+        url: 'https://passport.bilibili.com/x/passport-tv-login/qrcode/auth_code',
         headers: headers,
         data: sign({ gourl: '' })
       });
       return r.json();
     },
     poll: async (auth_code) => {
-      const r = await BLUL.Request.fetch({
+      const r = await BLUL.Request.monkey({
         method: 'POST',
-        url: 'https://passport.snm0516.aisee.tv/x/passport-tv-login/qrcode/poll',
+        url: 'https://passport.bilibili.com/x/passport-tv-login/qrcode/poll',
         headers: headers,
         data: sign({ auth_code })
       });
@@ -95,7 +95,7 @@ export default async function (importModule, BLUL, GM) {
     info: async (access_key) => {
       const r = await BLUL.Request.fetch({
         method: 'GET',
-        url: 'https://passport.snm0516.aisee.tv/x/passport-login/oauth2/info',
+        url: 'https://passport.bilibili.com/x/passport-login/oauth2/info',
         search: sign({ access_key })
       });
       return r.json();
@@ -103,7 +103,7 @@ export default async function (importModule, BLUL, GM) {
     refresh_token: async (access_key, refresh_token) => {
       const r = await BLUL.Request.fetch({
         method: 'POST',
-        url: 'https://passport.snm0516.aisee.tv/x/passport-login/oauth2/refresh_token',
+        url: 'https://passport.bilibili.com/x/passport-login/oauth2/refresh_token',
         data: sign({ access_key, refresh_token })
       });
       return r.json();
@@ -136,26 +136,30 @@ export default async function (importModule, BLUL, GM) {
 
   async function getAccessToken () {
     BLUL.debug(NAME, 'getAccessToken');
-    if (Date.now() < config.ts) return config.access_token;
-    let obj = await oauth2.info(config.access_token);
-    if (obj.code === 0) {
-      config.access_token = obj?.data?.access_token;
-      config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
-      await BLUL.Config.set('appToken.access_token', config.access_token);
-      await BLUL.Config.set('appToken.ts', config.ts);
-      await BLUL.Config.save();
-      return config.access_token;
-    }
-    obj = await oauth2.refresh_token(config.access_token, config.refresh_token);
-    if (obj.code === 0) {
-      config.access_token = obj?.data?.access_token;
-      config.refresh_token = obj?.data?.refresh_token;
-      config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
-      await BLUL.Config.set('appToken.access_token', config.access_token);
-      await BLUL.Config.set('appToken.refresh_token', config.refresh_token);
-      await BLUL.Config.set('appToken.ts', config.ts);
-      await BLUL.Config.save();
-      return config.access_token;
+    if (config.access_token) {
+      if (Date.now() < config.ts) return config.access_token;
+      let obj = await oauth2.info(config.access_token);
+      if (obj.code === 0) {
+        config.access_token = obj?.data?.access_token;
+        config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
+        await BLUL.Config.set('appToken.access_token', config.access_token);
+        await BLUL.Config.set('appToken.ts', config.ts);
+        await BLUL.Config.save();
+        return config.access_token;
+      }
+      if (config.refresh_token) {
+        obj = await oauth2.refresh_token(config.access_token, config.refresh_token);
+        if (obj.code === 0) {
+          config.access_token = obj?.data?.access_token;
+          config.refresh_token = obj?.data?.refresh_token;
+          config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
+          await BLUL.Config.set('appToken.access_token', config.access_token);
+          await BLUL.Config.set('appToken.refresh_token', config.refresh_token);
+          await BLUL.Config.set('appToken.ts', config.ts);
+          await BLUL.Config.save();
+          return config.access_token;
+        }
+      }
     }
     return getNewAccessToken();
   }
@@ -201,6 +205,7 @@ export default async function (importModule, BLUL, GM) {
   });
 
   BLUL.AppToken = {
+    sign,
     getNewAccessToken,
     getAccessToken
   };
