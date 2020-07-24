@@ -47,7 +47,7 @@ B站直播区用户脚本库
 // @resource     Worker https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/worker.js
 // @resource     Worker/env https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/worker/env.js
 // @resource     Worker/channel https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/worker/channel.js
-// @resource     AppClient https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/appclient.js
+// @resource     AppToken https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/apptoken.js
 ```
 
 然后启用脚本并打开受支持的页面，你应当会看到在偏右上方有 **弹幕**、**日志**、**设置** 等选项
