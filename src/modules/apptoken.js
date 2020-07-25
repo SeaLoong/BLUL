@@ -124,8 +124,8 @@ export default async function (importModule, BLUL, GM) {
       await Util.sleep(800);
       obj = await qrcode.poll(auth_code);
       if (obj.code === 0) {
-        config.access_token = obj?.data?.access_token;
-        config.refresh_token = obj?.data?.refresh_token;
+        config.access_token = obj?.data?.access_token ?? config.access_token;
+        config.refresh_token = obj?.data?.refresh_token ?? config.refresh_token;
         config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
         await BLUL.Config.set('appToken.access_token', config.access_token);
         await BLUL.Config.set('appToken.refresh_token', config.refresh_token);
@@ -142,7 +142,7 @@ export default async function (importModule, BLUL, GM) {
       if (Date.now() < config.ts) return config.access_token;
       let obj = await oauth2.info(config.access_token);
       if (obj.code === 0) {
-        config.access_token = obj?.data?.access_token;
+        config.access_token = obj?.data?.access_token ?? config.access_token;
         config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
         await BLUL.Config.set('appToken.access_token', config.access_token);
         await BLUL.Config.set('appToken.ts', config.ts);
@@ -152,8 +152,8 @@ export default async function (importModule, BLUL, GM) {
       if (config.refresh_token) {
         obj = await oauth2.refresh_token(config.access_token, config.refresh_token);
         if (obj.code === 0) {
-          config.access_token = obj?.data?.access_token;
-          config.refresh_token = obj?.data?.refresh_token;
+          config.access_token = obj?.data?.access_token ?? config.access_token;
+          config.refresh_token = obj?.data?.refresh_token ?? config.refresh_token;
           config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
           await BLUL.Config.set('appToken.access_token', config.access_token);
           await BLUL.Config.set('appToken.refresh_token', config.refresh_token);
@@ -186,7 +186,7 @@ export default async function (importModule, BLUL, GM) {
     BLUL.Config.addItem('appToken.fingerprint', 'fingerprint', config.fingerprint, { tag: 'input', attribute: { type: 'text' } });
     BLUL.Config.addItem('appToken.access_token', 'access_token', config.access_token, { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
     BLUL.Config.addItem('appToken.refresh_token', 'refresh_token', config.refresh_token, { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
-    BLUL.Config.addItem('appToken.ts', '过期时间戳', config.ts, { tag: 'input', help: '此项只用于存储和显示数据', attribute: { type: 'text', readonly: true } });
+    BLUL.Config.addItem('appToken.ts', '过期时间戳', config.ts, { tag: 'input', help: () => '此项只用于存储和显示数据<br>' + new Date(BLUL.Config.get('appToken.ts')).toLocaleString(), attribute: { type: 'text', readonly: true } });
 
     BLUL.Config.onload(() => {
       config.buvid = BLUL.Config.get('appToken.buvid');
