@@ -195,7 +195,7 @@ BLUL.run = async (options) => {
     if (await (async () => {
       const running = parseInt(await GM.getValue(mark) ?? 0);
       const ts = Date.now();
-      return (ts - running >= 0 && ts - running <= 15e3);
+      return (ts - running >= 0 && ts - running <= 5e3);
     })()) {
       if (!slient) {
         BLUL.Toast.warn('已经有其他页面正在运行脚本了哟~');
@@ -207,7 +207,7 @@ BLUL.run = async (options) => {
     await GM.setValue(mark, Date.now());
     const uniqueCheckInterval = setInterval(async () => {
       await GM.setValue(mark, Date.now());
-    }, 10e3);
+    }, 4e3);
     window.addEventListener('unload', async () => {
       clearInterval(uniqueCheckInterval);
       await GM.deleteValue(mark);
@@ -216,7 +216,7 @@ BLUL.run = async (options) => {
   await importModule('lodash'); /* global _ */
   const Util = BLUL.Util = await importModule('Util');
 
-  await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver && window.__NEPTUNE_IS_MY_WAIFU__);
+  await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver);
 
   if (login) {
     BLUL.INFO.CSRF = Util.getCookie('bili_jct');
