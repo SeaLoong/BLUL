@@ -150,7 +150,7 @@ BLUL.run = async (options) => {
     await GM.unregisterMenuCommand?.(resetResourceMenuCmdId); // eslint-disable-line no-unused-expressions
   };
 
-  await BLUL.addResource('BLULBase', ['https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src'], 'BLUL根目录');
+  await BLUL.addResource('BLULBase', ['https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src'], 'BLUL根目录');
   await BLUL.addResource('lodash', ['https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.15/lodash.min.js', 'https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js']);
   await BLUL.addResource('toastr', ['https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js', 'https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js']);
   await BLUL.addResource('jquery', ['https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js', 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js', 'https://code.jquery.com/jquery-3.5.1.min.js']);

@@ -22,5 +22,5 @@
 // @grant        GM.unregisterMenuCommand
 // @run-at       document-start
 // @license      MIT License
-// @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/main.js
+// @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/main.js
 // ==/UserScript==
