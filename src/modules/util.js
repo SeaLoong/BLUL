@@ -48,6 +48,16 @@ function getCookie (sKey) {
   return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
 }
 
+const keyEqualValueReg = /(?<=^|;)\s*([^=]+)\s*=\s*([^;]*)\s*(?=;|$)/g;
+function cookieStr2Object (s) {
+  const obj = {};
+  let r;
+  while ((r = keyEqualValueReg.exec(s))) {
+    obj[decodeURIComponent(r[1])] = decodeURIComponent(r[2]);
+  }
+  return obj;
+}
+
 const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 function randomID (length) {
   let ret = chars[Math.floor(Math.random() * 26) + 10];
@@ -248,6 +258,7 @@ export default {
   blob2DataURL,
   toURLSearchParamString,
   getCookie,
+  cookieStr2Object,
   randomID,
   int2str,
   compareVersion,

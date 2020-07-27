@@ -28,6 +28,7 @@ export default async function (importModule, BLUL, GM) {
         Accept: 'application/json, text/plain, */*',
         Cookie: document.cookie
       },
+      cookie: document.cookie,
       responseType: 'json'
     });
     if (!_.isEmpty(details.search)) {

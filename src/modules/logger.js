@@ -76,9 +76,9 @@ export default async function (importModule, BLUL, GM) {
     BLUL.Page.addTopItem('日志', function (select) {
       if (select) {
         divLogger.show();
+        keepScroll = true;
       } else {
         divLogger.hide();
-        keepScroll = true;
       }
     });
 
