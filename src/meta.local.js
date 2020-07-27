@@ -22,6 +22,7 @@
 // @grant        GM.unregisterMenuCommand
 // @run-at       document-start
 // @license      MIT License
+// @compatible   chrome 支持80或更高的版本
 // @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/main.js
 // @resource     jquery https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js
 // @resource     lodash https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.19/lodash.min.js
