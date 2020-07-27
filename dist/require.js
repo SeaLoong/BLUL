@@ -22,6 +22,7 @@
 // @grant        GM.unregisterMenuCommand
 // @run-at       document-start
 // @license      MIT License
+// @compatible   chrome 支持80或更高的版本
 // ==/UserScript==
 
 'use strict';
