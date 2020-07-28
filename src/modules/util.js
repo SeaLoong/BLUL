@@ -48,7 +48,8 @@ function getCookie (sKey) {
   return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
 }
 
-// 由于Firefox不支持正则表达式的前置断言，这个函数无法在Firefox中使用
+// 由于Firefox不支持正则表达式的前置断言，这个函数无法在Firefox中使用。不知道Firefox搞什么东西，即时不用这个函数也不能过加载，那就注释掉好了。
+/*
 function cookieStr2Object (s) {
   const obj = {};
   let r;
@@ -58,6 +59,7 @@ function cookieStr2Object (s) {
   }
   return obj;
 }
+*/
 
 const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 function randomID (length) {
