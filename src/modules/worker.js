@@ -10,17 +10,23 @@ export default async function (importModule, BLUL, GM) {
       worker.onerror = worker.onmessageerror = e => BLUL.Logger.error('Worker执行时出现错误', e);
       worker.onmessage = async e => {
         if (!(e.data instanceof Array) || e.data.length < 1) return;
-        if (initUrlMap.has(e.data[0])) {
-          const resolve = initUrlMap.get(e.data[0]);
-          initUrlMap.delete(e.data[0]);
-          resolve();
+        const status = e.data[0];
+        const url = e.data[1];
+        if (initUrlMap.has(url)) {
+          const { resolve, reject } = initUrlMap.get(url);
+          initUrlMap.delete(url);
+          if (status === 'OK') {
+            resolve();
+          } else {
+            reject();
+          }
         }
       };
 
       const initImport = async (name, op = 'IMPORT') => {
         const url = await BLUL.getResourceUrl(name);
         worker.postMessage([op, url]);
-        return new Promise(resolve => initUrlMap.set(url, resolve));
+        return new Promise((resolve, reject) => initUrlMap.set(url, { resolve, reject }));
       };
 
       await initImport('lodash');
