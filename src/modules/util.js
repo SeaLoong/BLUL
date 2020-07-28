@@ -48,10 +48,11 @@ function getCookie (sKey) {
   return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
 }
 
-const keyEqualValueReg = /(?<=^|;)\s*([^=]+)\s*=\s*([^;]*)\s*(?=;|$)/g;
+// 由于Firefox不支持正则表达式的前置断言，这个函数无法在Firefox中使用
 function cookieStr2Object (s) {
   const obj = {};
   let r;
+  const keyEqualValueReg = /(?<=^|;)\s*([^=]+)\s*=\s*([^;]*)\s*(?=;|$)/g;
   while ((r = keyEqualValueReg.exec(s))) {
     obj[decodeURIComponent(r[1])] = decodeURIComponent(r[2]);
   }
