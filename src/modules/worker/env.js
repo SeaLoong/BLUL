@@ -13,7 +13,7 @@ async function importModule (url, reImport = false) {
     importUrlMap.set(url, ret);
     return ret;
   } catch (error) {
-    await ((BLUL?.Logger ?? console).error('[BLUL][Worker]模块导入失败', error));
+    await ((BLUL?.Logger ?? console).error('[BLUL][Worker]模块导入失败', error, url));
   }
 }
 
@@ -40,7 +40,7 @@ onmessage = async e => {
     }
     postMessage(['OK', e.data[1]]);
   } catch (error) {
-    await ((BLUL?.Logger ?? console).error('[BLUL][Worker]', error));
+    await ((BLUL?.Logger ?? console).error('[BLUL][Worker]', error, e));
     postMessage(['ERROR', e.data[1]]);
   }
 };

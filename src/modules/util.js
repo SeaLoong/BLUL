@@ -261,7 +261,6 @@ export default {
   blob2DataURL,
   toURLSearchParamString,
   getCookie,
-  cookieStr2Object,
   randomID,
   int2str,
   compareVersion,
