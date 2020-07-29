@@ -282,7 +282,13 @@ BLUL.run = async (options) => {
   BLUL.INFO.VISIT_ID = window.__statisObserver.__visitId ?? '';
   BLUL.INFO.__NEPTUNE_IS_MY_WAIFU__ = window.__NEPTUNE_IS_MY_WAIFU__; // 包含B站自己请求返回的一些数据，当然也可以自行请求获取
 
-  const callHandler = f => f.apply(BLUL.load, [BLUL, GM]);
+  const callHandler = f => {
+    try {
+      return f.apply(BLUL.load, [BLUL, GM]);
+    } catch (error) {
+      (BLUL.Logger ?? console).error(error);
+    }
+  };
   if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
     BLUL.onupgrade = callHandler;
     await GM.setValue('version', BLUL.VERSION);
