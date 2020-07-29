@@ -86,7 +86,7 @@ BLUL.createImportModuleFunc = function (context, keepContext = false) {
         importUrlMap.set(name, ret);
         return ret;
       } catch (error) {
-        (BLUL.Logger ?? console).error('模块导入失败，尝试使用script标签加载', error);
+        (BLUL.Logger ?? console).error(`模块 ${name} 导入失败，尝试使用script标签加载`, error);
         return new Promise((resolve, reject) => {
           const elem = document.createElement('script');
           elem.onerror = reject;
@@ -99,6 +99,7 @@ BLUL.createImportModuleFunc = function (context, keepContext = false) {
         });
       }
     } catch (error) {
+      (BLUL.Logger ?? console).error(`使用script标签加载模块 ${name} 失败`, error);
     }
   }
   if (!keepContext) context.unshift(importModule);
@@ -124,7 +125,7 @@ BLUL.createImportModuleFromCodeFunc = function (context, keepContext = false) {
       importCodeMap.set(code, ret);
       return ret;
     } catch (error) {
-      (BLUL.Logger ?? console).error('模块导入失败', error);
+      (BLUL.Logger ?? console).error('模块导入失败', error, code);
     }
   }
   if (!keepContext) context.unshift(importModule);
