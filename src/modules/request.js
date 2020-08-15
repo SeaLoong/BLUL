@@ -25,10 +25,9 @@ export default async function (importModule, BLUL, GM) {
     _.defaultsDeep(details, {
       method: 'GET',
       headers: {
-        Accept: 'application/json, text/plain, */*',
-        Cookie: document.cookie
+        Accept: 'application/json, text/plain, */*'
       },
-      cookie: document.cookie,
+      anonymous: false,
       responseType: 'json'
     });
     if (!_.isEmpty(details.search)) {
