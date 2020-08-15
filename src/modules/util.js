@@ -47,7 +47,7 @@ function toURLSearchParamString (search) {
 const valueMap = new Map([[' ', '%20'], ['"', '%22'], ['@', '%40'], [',', '%2C'], [';', '%3B'], ['\\', '%5C']]);
 function cookieValueEncode (sKey) {
   for (const [k, v] of valueMap) {
-    sKey = sKey.replace(k, v);
+    while (sKey.includes(k)) sKey = sKey.replace(k, v);
   }
   return sKey;
 }
