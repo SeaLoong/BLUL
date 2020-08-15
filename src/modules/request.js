@@ -29,7 +29,7 @@ export default async function (importModule, BLUL, GM) {
         Pragma: 'no-cache',
         'Cache-Control': 'no-cache'
       },
-      cookie: document.cookie,
+      cookie: Util.getCookie(),
       responseType: 'json'
     });
     if (!_.isEmpty(details.search)) {
