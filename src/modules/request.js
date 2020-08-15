@@ -85,9 +85,7 @@ export default async function (importModule, BLUL, GM) {
     _.defaultsDeep(init, {
       method: 'GET',
       headers: {
-        accept: 'application/json, text/plain, */*',
-        pragma: 'no-cache',
-        'cache-control': 'no-cache'
+        accept: 'application/json, text/plain, */*'
       },
       credentials: 'include',
       referrer: ''
