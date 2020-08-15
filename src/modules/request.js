@@ -25,9 +25,11 @@ export default async function (importModule, BLUL, GM) {
     _.defaultsDeep(details, {
       method: 'GET',
       headers: {
-        Accept: 'application/json, text/plain, */*'
+        Accept: 'application/json, text/plain, */*',
+        Pragma: 'no-cache',
+        'Cache-Control': 'no-cache'
       },
-      anonymous: false,
+      cookie: document.cookie,
       responseType: 'json'
     });
     if (!_.isEmpty(details.search)) {
@@ -83,7 +85,9 @@ export default async function (importModule, BLUL, GM) {
     _.defaultsDeep(init, {
       method: 'GET',
       headers: {
-        accept: 'application/json, text/plain, */*'
+        accept: 'application/json, text/plain, */*',
+        pragma: 'no-cache',
+        'cache-control': 'no-cache'
       },
       credentials: 'include',
       referrer: ''
