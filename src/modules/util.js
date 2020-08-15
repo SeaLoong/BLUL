@@ -44,6 +44,14 @@ function toURLSearchParamString (search) {
   return (search instanceof URLSearchParams ? search : new URLSearchParams(search)).toString();
 }
 
+const valueMap = new Map([[' ', '%20'], ['"', '%22'], ['@', '%40'], [',', '%2C'], [';', '%3B'], ['\\', '%5C']]);
+function cookieValueEncode (sKey) {
+  for (const [k, v] of valueMap) {
+    sKey = sKey.replace(k, v);
+  }
+  return sKey;
+}
+
 const keyEqualsValueRegExp = /\s*(\S*)\s*=\s*(\S*)\s*/;
 const ignoreKeys = new Set(['path', 'domain', 'max-age', 'expires', 'secure']);
 let lastDocumentCookie, lastCookie;
@@ -54,8 +62,9 @@ function getCookie (sKey) {
   const arr = lastDocumentCookie.split('; ');
   for (let i = 0; i < arr.length; i++) {
     const r = keyEqualsValueRegExp.exec(arr[i]);
+    if (!r) continue;
     if (ignoreKeys.has(r[1])) continue;
-    arr[i] = encodeURIComponent(r[1]) + '=' + encodeURIComponent(r[2]);
+    arr[i] = encodeURIComponent(r[1]) + '=' + cookieValueEncode(r[2]);
   }
   lastCookie = arr.join('; ');
   return lastCookie;
@@ -273,6 +282,7 @@ export default {
   dataURL2Blob,
   blob2DataURL,
   toURLSearchParamString,
+  cookieValueEncode,
   getCookie,
   randomID,
   int2str,
