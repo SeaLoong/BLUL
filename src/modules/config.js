@@ -392,7 +392,7 @@ export default async function (importModule, BLUL, GM) {
           BLUL.Logger.warn(NAME, '保存设置时出错，部分设置项未正确保存');
         }
         await save();
-        BLUL.Logger.success(NAME, '保存完成');
+        BLUL.Logger.success(NAME, '保存完成，部分设置需要刷新后生效');
         await load();
       }
     };
