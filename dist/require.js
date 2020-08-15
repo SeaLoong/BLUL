@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BLUL
 // @namespace    SeaLoong
-// @version      1.0.0
+// @version      1.0.1
 // @description  Bilibili Live Userscript Library
 // @author       SeaLoong
 // @homepageURL  https://github.com/SeaLoong/BLUL
@@ -31,7 +31,13 @@ if (typeof unsafeWindow !== 'undefined') {
   window = unsafeWindow; // eslint-disable-line no-global-assign
   window.safeWindow = safeWindow;
 }
-const BLUL = window.BLUL = {
+var BLUL;
+if (window.BLUL) {
+  console.warn('检测到BLUL已存在，本脚本将不再初始化BLUL，脚本行为可能会出现异常');
+  BLUL = window.BLUL;
+  return;
+}
+BLUL = window.BLUL = {
   debug: () => {},
   NAME: 'BLUL',
   ENVIRONMENT: GM.info.scriptHandler,
@@ -152,15 +158,13 @@ BLUL.addResource = async function (name, urls, displayName) {
 };
 
 BLUL.run = async (options) => {
-  const { debug, slient, loadInSpecial, unique, login, EULA, EULA_VERSION } = options ?? {};
+  const { debug, slient, loadInSpecial, unique, login, EULA, EULA_VERSION, NOTICE } = options ?? {};
   if (debug) {
     BLUL.debug = console.debug;
     BLUL.GM = GM;
     BLUL.debug(BLUL);
-    if (!window.top[BLUL.NAME]) {
-      window.top[BLUL.NAME] = BLUL;
-    }
   }
+  window.top[BLUL.NAME] = BLUL;
 
   // 特殊直播间页面，如 6 55 76
   if (!loadInSpecial && document.getElementById('player-ctnr')) return false;
@@ -291,8 +295,13 @@ BLUL.run = async (options) => {
     }
   };
   if (Util.compareVersion(BLUL.VERSION, await GM.getValue('version')) > 0) {
-    BLUL.onupgrade = callHandler;
     await GM.setValue('version', BLUL.VERSION);
+    if (NOTICE) {
+      const dialog = new BLUL.Dialog(await Util.result(NOTICE), '更新说明-' + BLUL.VERSION);
+      dialog.addButton('知道了', () => dialog.close());
+      dialog.show();
+    }
+    BLUL.onupgrade = callHandler;
   }
   BLUL.onpreinit = callHandler;
   BLUL.oninit = callHandler;
