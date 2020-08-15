@@ -25,12 +25,12 @@ export default async function (importModule, BLUL, GM) {
     _.defaultsDeep(details, {
       method: 'GET',
       headers: {
-        Accept: 'application/json, text/plain, */*',
-        Pragma: 'no-cache',
-        'Cache-Control': 'no-cache'
+        Accept: 'application/json, text/plain, */*'
       },
-      cookie: Util.getCookie(),
-      responseType: 'json'
+      cookie: document.cookie,
+      nocache: true,
+      responseType: 'json',
+      fetch: true
     });
     if (!_.isEmpty(details.search)) {
       details.url += '?' + Util.toURLSearchParamString(details.search);

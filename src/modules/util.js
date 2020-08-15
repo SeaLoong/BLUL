@@ -44,30 +44,8 @@ function toURLSearchParamString (search) {
   return (search instanceof URLSearchParams ? search : new URLSearchParams(search)).toString();
 }
 
-const valueMap = new Map([[' ', '%20'], ['"', '%22'], ['@', '%40'], [',', '%2C'], [';', '%3B'], ['\\', '%5C']]);
-function cookieValueEncode (sKey) {
-  for (const [k, v] of valueMap) {
-    while (sKey.includes(k)) sKey = sKey.replace(k, v);
-  }
-  return sKey;
-}
-
-const keyEqualsValueRegExp = /\s*(\S*)\s*=\s*(\S*)\s*/;
-const ignoreKeys = new Set(['path', 'domain', 'max-age', 'expires', 'secure']);
-let lastDocumentCookie, lastCookie;
 function getCookie (sKey) {
-  if (sKey) return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
-  if (lastDocumentCookie === document.cookie) return lastCookie;
-  lastDocumentCookie = document.cookie;
-  const arr = lastDocumentCookie.split('; ');
-  for (let i = 0; i < arr.length; i++) {
-    const r = keyEqualsValueRegExp.exec(arr[i]);
-    if (!r) continue;
-    if (ignoreKeys.has(r[1])) continue;
-    arr[i] = encodeURIComponent(r[1]) + '=' + cookieValueEncode(r[2]);
-  }
-  lastCookie = arr.join('; ');
-  return lastCookie;
+  return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
 }
 
 // 由于Firefox不支持正则表达式的前置断言，这个函数无法在Firefox中使用。不知道Firefox搞什么东西，即时不用这个函数也不能过加载，那就注释掉好了。
@@ -282,7 +260,6 @@ export default {
   dataURL2Blob,
   blob2DataURL,
   toURLSearchParamString,
-  cookieValueEncode,
   getCookie,
   randomID,
   int2str,
