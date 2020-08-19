@@ -21,8 +21,8 @@ async function importModuleFromCode (code, reImport = false) {
   try {
     if (!reImport && importMap.has(code)) return importMap.get(code);
     if (BLUL?.getResourceText) code = await BLUL.getResourceText(code) ?? code;
-    code = code.replace('export default', 'const exports =') + ';\n if (typeof exports !== "undefined") return exports;';
-    const fn = (0, eval)(code); // eslint-disable-line no-eval
+    code = code.replace('export default', 'const exports =') + ';\nfor (const k in this) self[k] = this[k];\nif (typeof exports !== "undefined") return exports;';
+    const fn = Function(code); // eslint-disable-line no-new-func
     let ret = fn.apply(fn, context);
     if (ret instanceof Function) ret = ret.apply(ret, context);
     ret = await ret;
