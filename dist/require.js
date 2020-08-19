@@ -83,6 +83,22 @@ var BLUL;
 
   BLUL.getResourceUrl = async (name) => await GM.getResourceUrl(name) ?? BLUL.RESOURCE[name] ?? ((BLUL.BLUL_MODULE_NAMES.includes(name) ? BLUL.RESOURCE.BLULBase : BLUL.RESOURCE.base) + '/modules/' + name.toLowerCase() + '.js');
 
+  BLUL.getResourceText = async (name) => {
+    let ret = await GM.getResourceText(name);
+    if (ret === undefined || ret === null) {
+      const detail = {
+        url: await BLUL.getResourceUrl(name),
+        fetch: true
+      };
+      ret = new Promise((resolve, reject) => {
+        detail.onload = res => resolve(res.response);
+        detail.ontimeout = res => reject(res);
+      });
+      GM.xmlHttpRequest(detail);
+    }
+    return ret;
+  };
+
   BLUL.createImportModuleFunc = function (context, keepContext = false) {
     /**
      * 如果需要上下文, Module 应当返回(export default)一个 Function/AsyncFunction, 其参数表示上下文, 且第一个参数是importModule
