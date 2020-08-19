@@ -120,7 +120,8 @@ var BLUL;
     async function importModule (code, reImport = false) {
       try {
         if (!reImport && importCodeMap.has(code)) return importCodeMap.get(code);
-        code = (await BLUL.getResourceText(code) ?? code) + ';\n if (typeof exports !== "undefined") return exports;';
+        code = (await BLUL.getResourceText(code) ?? code);
+        code = code.replace('export default', 'const exports =') + ';\n if (typeof exports !== "undefined") return exports;';
         const fn = Function(code); // eslint-disable-line no-new-func
         let ret = fn.apply(fn, context);
         if (ret instanceof Function) ret = ret.apply(ret, context);
