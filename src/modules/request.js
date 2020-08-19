@@ -107,14 +107,13 @@ export default async function (importModule, BLUL, GM) {
     }
     return new Promise((resolve, reject) => {
       requesting++;
-      const req = new Request(init.url, init);
-      window.fetch(req).then(response => {
+      window.fetch(init.url, init).then(response => {
         requesting--;
-        BLUL.debug('Request.fetch:', req, response);
+        BLUL.debug('Request.fetch:', init, response);
         return resolve(response);
       }, reason => {
         requesting--;
-        BLUL.debug('Request.fetch:', req, reason);
+        BLUL.debug('Request.fetch:', init, reason);
         return reject(reason);
       });
     });

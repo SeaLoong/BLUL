@@ -59,15 +59,7 @@ var BLUL;
   BLUL.getResourceText = async (name) => {
     let ret = await GM.getResourceText(name);
     if (ret === undefined || ret === null) {
-      const detail = {
-        url: await BLUL.getResourceUrl(name),
-        fetch: true
-      };
-      ret = new Promise((resolve, reject) => {
-        detail.onload = res => resolve(res.response);
-        detail.ontimeout = res => reject(res);
-      });
-      GM.xmlHttpRequest(detail);
+      ret = (await window.fetch(await BLUL.getResourceUrl(name))).text();
     }
     return ret;
   };
