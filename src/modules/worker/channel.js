@@ -20,109 +20,102 @@ const recurse = (value, path = '', callFn) => {
 };
 export default function (importModule) {
   return class Channel {
-    env = [];
+    env = {};
+    id = 0;
     worker;
     onenv;
     waitingMap = new Map();
     constructor (worker) {
       this.worker = worker;
+      const callFn = path => (...args) => this.postCALL(path, args);
       worker.onmessage = async e => {
-        switch (e.data[0]) {
+        const [id, op, data] = e.data;
+        switch (op) {
           case 'IMPORT':
           {
-            const ret = await importModule(e.data[1]);
+            const ret = await importModule(data);
             if (ret?.NAME) this.env[ret.NAME] = ret;
-            worker.postMessage(['IMPORTED', e.data[1], recurse(ret, ret?.NAME)]);
+            this.post(id, 'IMPORTED', recurse(ret, ret?.NAME));
             break;
           }
           case 'IMPORTED':
-          {
-            const url = e.data[1];
-            if (this.waitingMap.has(url)) {
-              const resolve = this.waitingMap.get(url);
-              this.waitingMap.delete(url);
-              resolve(recurse(e.data[2], '', (path) => (...args) => this.postCALL(path, args)));
-            }
+            this.resolvePost(id, recurse(data, '', callFn));
             break;
-          }
           case 'ENV':
           {
-            const callFn = (path) => (...args) => this.postCALL(path, args);
-            this.env[0] = recurse(e.data[1][0], 'BLUL', callFn);
-            this.env[1] = recurse(e.data[1][1], 'GM', callFn);
-            if (this.onenv instanceof Function) this.onenv(this.env);
-            worker.postMessage(['ENVED']);
+            const [env, name] = data;
+            this.env[name] = recurse(env, name, callFn);
+            if (this.onenv instanceof Function) this.onenv(env, name);
+            this.post(id, 'ENVED');
             break;
           }
           case 'ENVED':
-          {
-            if (this.waitingMap.has('ENV')) {
-              const resolve = this.waitingMap.get('ENV');
-              this.waitingMap.delete('ENV');
-              resolve();
-            }
+            this.resolvePost(id);
             break;
-          }
           case 'CALL':
           {
-            const ret = _.get(this.env, e.data[1])?.apply(this, e.data[3]);
-            if (ret instanceof Promise) {
-              ret.then(value => worker.postMessage(['RETURN', e.data[1], e.data[2], recurse(value)]),
-                reason => worker.postMessage(['ERROR', e.data[1], e.data[2], reason.toString()]));
-            } else {
-              try {
-                worker.postMessage(['RETURN', e.data[1], e.data[2], recurse(ret)]);
-              } catch (error) {
-                worker.postMessage(['ERROR', e.data[1], e.data[2], error.toString()]);
+            const [path, args] = data;
+            try {
+              const ret = _.get(this.env, path)?.apply(this, args);
+              if (ret instanceof Promise) {
+                ret.then(value => this.post(id, 'RETURN', recurse(value)),
+                  reason => this.post(id, 'ERROR', reason.toString()));
+              } else {
+                this.post(id, 'RETURN', recurse(ret));
               }
+            } catch (error) {
+              this.post(id, 'ERROR', error.toString());
             }
             break;
           }
           case 'RETURN':
-          {
-            const key = e.data[1] + e.data[2];
-            if (this.waitingMap.has(key)) {
-              const { resolve } = this.waitingMap.get(key);
-              this.waitingMap.delete(key);
-              resolve(e.data[3]);
-            }
+            this.resolvePost(id, data);
             break;
-          }
           case 'ERROR':
-          {
-            const key = e.data[1] + e.data[2];
-            if (this.waitingMap.has(key)) {
-              const { reject } = this.waitingMap.get(key);
-              this.waitingMap.delete(key);
-              reject(e.data[3]);
-            }
+            this.rejectPost(id, data);
             break;
-          }
         }
       };
     }
 
-    postENV (...envs) {
-      return new Promise(resolve => {
-        this.waitingMap.set('ENV', resolve);
-        this.worker.postMessage(['ENV', recurse(envs)]);
+    post (id, op, data) {
+      this.worker.postMessage([id, op, data]);
+    }
+
+    postAndWait (op, data) {
+      while (this.waitingMap.has(this.id)) this.id++;
+      return new Promise((resolve, reject) => {
+        this.waitingMap.set(this.id, { resolve, reject });
+        this.post(this.id, op, data);
       });
     }
 
-    postIMPORT (url) {
-      return new Promise(resolve => {
-        this.waitingMap.set(url, resolve);
-        this.worker.postMessage(['IMPORT', url]);
-      });
+    resolvePost (id, value) {
+      if (this.waitingMap.has(id)) {
+        const { resolve } = this.waitingMap.get(id);
+        this.waitingMap.delete(id);
+        return resolve(value);
+      }
+    }
+
+    rejectPost (id, value) {
+      if (this.waitingMap.has(id)) {
+        const { reject } = this.waitingMap.get(id);
+        this.waitingMap.delete(id);
+        return reject(value);
+      }
+    }
+
+    postIMPORT (res) {
+      return this.postAndWait('IMPORT', res);
+    }
+
+    postENV (env, name) {
+      return this.postAndWait('ENV', [recurse(env), name]);
     }
 
     postCALL (path, args) {
-      return new Promise((resolve, reject) => {
-        let i = 0;
-        while (this.waitingMap.has(path + i)) i++;
-        this.waitingMap.set(path + i, { resolve, reject });
-        this.worker.postMessage(['CALL', path, i, args]);
-      });
+      return this.postAndWait('CALL', [path, args]);
     }
   };
 }
