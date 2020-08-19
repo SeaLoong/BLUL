@@ -140,8 +140,8 @@ var BLUL;
       try {
         if (!reImport && importCodeMap.has(code)) return importCodeMap.get(code);
         code = (await BLUL.getResourceText(code) ?? code);
-        code = code.replace('export default', 'const exports =') + ';\n if (typeof exports !== "undefined") return exports;';
-        const fn = (0, eval)(code); // eslint-disable-line no-eval
+        code = code.replace('export default', 'const exports =') + ';\nif (typeof exports !== "undefined") return exports;';
+        const fn = Function(code); // eslint-disable-line no-new-func
         let ret = fn.apply(fn, context);
         if (ret instanceof Function) ret = ret.apply(ret, context);
         ret = await ret;
