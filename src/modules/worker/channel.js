@@ -45,7 +45,7 @@ export default function (importModule) {
           {
             const [env, name] = data;
             this.env[name] = recurse(env, name, callFn);
-            if (this.onenv instanceof Function) this.onenv(env, name);
+            if (this.onenv instanceof Function) this.onenv(this.env[name], name);
             this.post(id, 'ENVED');
             break;
           }
