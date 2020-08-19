@@ -111,7 +111,7 @@ export default function (importModule) {
     }
 
     postENV (env, name) {
-      return this.postAndWait('ENV', [recurse(env), name]);
+      return this.postAndWait('ENV', [recurse(env, name), name]);
     }
 
     postCALL (path, args) {
