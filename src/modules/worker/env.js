@@ -60,7 +60,7 @@ onmessage = async e => {
           if (name === 'BLUL') BLUL = env;
           else if (name === 'GM') GM = env;
           if (BLUL) BLUL.Channel = channel;
-          context.push(BLUL, GM);
+          if (BLUL && GM) context.push(BLUL, GM);
         };
         break;
       }
