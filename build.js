@@ -2,7 +2,9 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 
+const fileCache = new Map();
 function readFile (path) {
+  if (fileCache.has(path)) return fileCache.get(path);
   return new Promise((resolve, reject) => {
     if (path.startsWith('http')) {
       let data = '';
@@ -12,6 +14,7 @@ function readFile (path) {
         });
         res.on('end', () => {
           data = data.toString();
+          fileCache.set(path, data);
           if (res.complete) resolve(data);
           else reject(data);
         });
@@ -20,7 +23,9 @@ function readFile (path) {
       else http.get(path, callback);
     } else {
       try {
-        resolve(fs.readFileSync(path).toString());
+        const data = fs.readFileSync(path).toString();
+        fileCache.set(path, data);
+        resolve(data);
       } catch (e) {
         reject(e);
       }
