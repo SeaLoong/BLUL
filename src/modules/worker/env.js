@@ -9,7 +9,7 @@ async function importModuleFromUrl (url, reImport = false) {
     if (!url.startsWith('data:') && !url.startsWith('http') && BLUL?.getResourceUrl) url = await BLUL.getResourceUrl(url);
     let ret = await import(url);
     ret = ret?.default ?? ret;
-    if (ret instanceof Function) ret = ret.apply(ret, context);
+    if (ret instanceof Function) ret = ret.apply(self, context);
     ret = await ret;
     importMap.set(url, ret);
     return ret;
@@ -21,10 +21,10 @@ async function importModuleFromCode (code, reImport = false) {
   try {
     if (!reImport && importMap.has(code)) return importMap.get(code);
     if (BLUL?.getResourceText) code = await BLUL.getResourceText(code) ?? code;
-    code = code.replace('export default', 'const exports =') + ';\nfor (const k in this) self[k] = this[k];\nif (typeof exports !== "undefined") return exports;';
+    code = code.replace('export default', 'const exports =') + ';\nif (typeof exports !== "undefined") return exports;';
     const fn = Function(code); // eslint-disable-line no-new-func
-    let ret = fn.apply(fn, context);
-    if (ret instanceof Function) ret = ret.apply(ret, context);
+    let ret = fn.apply(self, context);
+    if (ret instanceof Function) ret = ret.apply(self, context);
     ret = await ret;
     importMap.set(code, ret);
     return ret;
