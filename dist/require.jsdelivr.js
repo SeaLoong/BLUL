@@ -22,7 +22,23 @@
 // @grant        GM.unregisterMenuCommand
 // @run-at       document-start
 // @license      MIT License
-// @compatible   chrome 支持80或更高的版本
+// @incompatible chrome 不支持内核低于80的版本
+// @incompatible firefox 不支持内核低于72的版本
+// @resource     jquery https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js
+// @resource     lodash https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.19/lodash.min.js
+// @resource     toastr https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
+// @resource     spark-md5 https://cdn.bootcdn.net/ajax/libs/spark-md5/3.0.0/spark-md5.min.js
+// @resource     Toast https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/toast.js
+// @resource     Util https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/util.js
+// @resource     Dialog https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/dialog.js
+// @resource     Page https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/page.js
+// @resource     Logger https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/logger.js
+// @resource     Config https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/config.js
+// @resource     Request https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/request.js
+// @resource     Worker https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/worker.js
+// @resource     Worker/env https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/worker/env.js
+// @resource     Worker/channel https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/worker/channel.js
+// @resource     AppToken https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master/src/modules/apptoken.js
 // ==/UserScript==
 
 'use strict';
@@ -330,6 +346,7 @@ var BLUL;
     return true;
   };
 })();
+
 
 
 
