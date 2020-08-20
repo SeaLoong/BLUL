@@ -100,12 +100,14 @@ function mergeMeta (metasArr) {
 }
 
 const userScriptRegExp = /\/\/\s*==UserScript==\s*([\s\S]*?)\/\/\s*==\/UserScript==/;
-const pathSet = new Set();
+const processingMap = new Map();
 async function processMeta (path, replaceUrlFn, onlyMeta = false) {
   console.log('processMeta', path, onlyMeta);
+  if (!processingMap.has(replaceUrlFn)) processingMap.set(replaceUrlFn, new Set());
+  const pathSet = processingMap.get(replaceUrlFn);
   if (pathSet.has(path)) return [[], ''];
   pathSet.add(path);
-  const data = await readFile(path);
+  const data = await readFile(replaceUrlFn instanceof Function ? replaceUrlFn(path, false) : path);
   const r = userScriptRegExp.exec(data);
   if (!r) return [[], data];
   const notMeta = data.slice(r.index + r[0].length);
@@ -174,7 +176,11 @@ if (!fs.existsSync('./dist')) {
 }
 
 function createReplaceFn (dir, name) {
-  return url => resolvePath(url.replace('{replace}', name), dir);
+  return (url, res = true) => {
+    url = url.replace('{replace}', name);
+    if (res) return resolvePath(url, dir);
+    return url;
+  };
 }
 
 (async function () {
