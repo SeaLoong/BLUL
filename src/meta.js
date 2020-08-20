@@ -6,6 +6,7 @@
 // @author        SeaLoong
 // @homepageURL   https://github.com/SeaLoong/BLUL
 // @supportURL    https://github.com/SeaLoong/BLUL/issues
+// @updateURL     ./dist/require.{replace}.js
 // @include       /^https?:\/\/live\.bilibili\.com\/(blanc\/)?\d+.*$/
 // @connect       bilibili.com
 // @connect       *

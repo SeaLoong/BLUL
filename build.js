@@ -96,10 +96,10 @@ function mergeMeta (metasArr) {
 
 const userScriptRegExp = /\/\/\s*==UserScript==\s*([\s\S]*?)\/\/\s*==\/UserScript==/;
 const pathSet = new Set();
-async function processMeta (path, dir, onlyMeta = false) {
-  console.log('processMeta', path, dir, onlyMeta);
-  if (pathSet.has(path + dir)) return [[], ''];
-  pathSet.add(path + dir);
+async function processMeta (path, replaceUrlFn, onlyMeta = false) {
+  console.log('processMeta', path, onlyMeta);
+  if (pathSet.has(path)) return [[], ''];
+  pathSet.add(path);
   const data = await readFile(path);
   const r = userScriptRegExp.exec(data);
   if (!r) return [[], data];
@@ -117,10 +117,12 @@ async function processMeta (path, dir, onlyMeta = false) {
       {
         if (its.length < 3) continue;
         const url = its[2];
-        const m = await processMeta(url, dir, onlyMeta);
+        const m = await processMeta(url, replaceUrlFn, onlyMeta);
         overrideMetas.push(m[0]);
         if (onlyMeta) {
-          line = line.replace(url, resolvePath(url, dir));
+          if (replaceUrlFn instanceof Function) {
+            line = line.replace(url, replaceUrlFn(url));
+          }
         } else {
           notMetas.push(m[1]);
           continue;
@@ -131,7 +133,26 @@ async function processMeta (path, dir, onlyMeta = false) {
       {
         if (its.length < 4) continue;
         const url = its[3];
-        line = line.replace(url, resolvePath(url, dir));
+        if (replaceUrlFn instanceof Function) {
+          line = line.replace(url, replaceUrlFn(url));
+        }
+        break;
+      }
+      default:
+        if (!tag.endsWith('URL')) break;
+        // eslint-disable-line no-fallthrough
+      case '@homepage':
+      case '@website':
+      case '@source':
+      case '@icon':
+      case '@defaulticon':
+      case '@icon64':
+      {
+        if (its.length < 3) continue;
+        const url = its[2];
+        if (replaceUrlFn instanceof Function) {
+          line = line.replace(url, replaceUrlFn(url));
+        }
         break;
       }
     }
@@ -139,7 +160,7 @@ async function processMeta (path, dir, onlyMeta = false) {
   }
   overrideMetas.push(metas);
   notMetas.push(notMeta);
-  pathSet.delete(path + dir);
+  pathSet.delete(path);
   return [mergeMeta(overrideMetas), notMetas.join('\n')];
 }
 
@@ -147,16 +168,22 @@ if (!fs.existsSync('./dist')) {
   fs.mkdirSync('./dist');
 }
 
+function createReplaceFn (dir, name) {
+  return url => resolvePath(url.replace('{replace}', name), dir);
+}
+
 (async function () {
-  let dist = await processMeta('./src/meta.js', 'https://raw.githubusercontent.com/SeaLoong/BLUL/master');
+  const replaceGithub = createReplaceFn('https://raw.githubusercontent.com/SeaLoong/BLUL/master', 'github');
+  let dist = await processMeta('./src/meta.js', replaceGithub);
   fs.writeFileSync('./dist/require.github.js', wrap(dist[0], dist[1]));
 
-  dist = await processMeta('./src/meta.js', 'https://raw.githubusercontent.com/SeaLoong/BLUL/master', true);
+  dist = await processMeta('./src/meta.js', replaceGithub, true);
   fs.writeFileSync('./dist/meta.github.js', wrap(dist[0], dist[1]));
 
-  dist = await processMeta('./src/meta.js', 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master');
+  const replaceJsdelivr = createReplaceFn('https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master', 'jsdelivr');
+  dist = await processMeta('./src/meta.js', replaceJsdelivr);
   fs.writeFileSync('./dist/require.jsdelivr.js', wrap(dist[0], dist[1]));
 
-  dist = await processMeta('./src/meta.js', 'https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master', true);
+  dist = await processMeta('./src/meta.js', replaceJsdelivr, true);
   fs.writeFileSync('./dist/meta.jsdelivr.js', wrap(dist[0], dist[1]));
 })();
