@@ -23,7 +23,7 @@ function readFile (path) {
       else http.get(path, callback);
     } else {
       try {
-        const data = fs.readFileSync(path).toString();
+        const data = fs.readFileSync('./src/' + path).toString();
         fileCache.set(path, data);
         resolve(data);
       } catch (e) {
@@ -171,10 +171,6 @@ async function processMeta (path, replaceUrlFn, onlyMeta = false) {
   return [mergeMeta(overrideMetas), notMetas.join('\n')];
 }
 
-if (!fs.existsSync('./dist')) {
-  fs.mkdirSync('./dist');
-}
-
 function createReplaceFn (dir, name) {
   return (url, res = true) => {
     url = url.replace('{replace}', name);
@@ -183,18 +179,32 @@ function createReplaceFn (dir, name) {
   };
 }
 
+function copy (src, dst) {
+  console.log('Copy from', src, 'to', dst);
+  if (fs.statSync(src).isDirectory()) {
+    if (!fs.existsSync(dst))fs.mkdirSync(dst);
+    fs.readdirSync(src).forEach(path => copy(src + '/' + path, dst + '/' + path));
+  } else {
+    fs.copyFileSync(src, dst);
+  }
+}
+
 (async function () {
-  const replaceGithub = createReplaceFn('https://raw.githubusercontent.com/SeaLoong/BLUL/master', 'github');
-  let dist = await processMeta('./src/meta.js', replaceGithub);
+  if (!fs.existsSync('./dist')) fs.mkdirSync('./dist');
+
+  const replaceGithub = createReplaceFn('https://raw.githubusercontent.com/SeaLoong/BLUL/dist', 'github');
+  let dist = await processMeta('./meta.js', replaceGithub);
   fs.writeFileSync('./dist/require.github.js', wrap(dist[0], dist[1]));
 
-  dist = await processMeta('./src/meta.js', replaceGithub, true);
+  dist = await processMeta('./meta.js', replaceGithub, true);
   fs.writeFileSync('./dist/meta.github.js', wrap(dist[0], dist[1]));
 
-  const replaceJsdelivr = createReplaceFn('https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@master', 'jsdelivr');
-  dist = await processMeta('./src/meta.js', replaceJsdelivr);
+  const replaceJsdelivr = createReplaceFn('https://cdn.jsdelivr.net/gh/SeaLoong/BLUL@dist', 'jsdelivr');
+  dist = await processMeta('./meta.js', replaceJsdelivr);
   fs.writeFileSync('./dist/require.jsdelivr.js', wrap(dist[0], dist[1]));
 
-  dist = await processMeta('./src/meta.js', replaceJsdelivr, true);
+  dist = await processMeta('./meta.js', replaceJsdelivr, true);
   fs.writeFileSync('./dist/meta.jsdelivr.js', wrap(dist[0], dist[1]));
+
+  copy('./src/modules', './dist/modules');
 })();
