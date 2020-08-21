@@ -6,6 +6,18 @@ B站直播区用户脚本库
 
 -----------------------------------------
 
+## 开源许可证
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg?longCache=true)](https://github.com/SeaLoong/BLUL/blob/master/LICENSE)
+
++ 本项目中使用到的库
+  + [jQuery](https://jquery.com/) - [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?longCache=true)](https://github.com/jquery/jquery/blob/master/LICENSE.txt)
+  + [Lodash](https://lodash.com/) - [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?longCache=true)](https://github.com/lodash/lodash/blob/master/LICENSE)
+  + [toastr](https://github.com/CodeSeven/toastr) - [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?longCache=true)](https://github.com/CodeSeven/toastr/blob/master/LICENSE)
+  + [SparkMD5](https://github.com/satazor/js-spark-md5) - [![WTFPL License](https://img.shields.io/badge/License-WTFPL-green.svg?longCache=true)](https://github.com/satazor/js-spark-md5/blob/master/LICENSE)
+
+-----------------------------------------
+
 ## **安装**
 
 如果你会修改使用我写的 `build.js` ，只需要在你的 **元信息** 中加入
@@ -61,7 +73,7 @@ B站直播区用户脚本库
 然后启用脚本并打开受支持的页面，你应当会看到在偏右上方有 **弹幕**、**日志**、**设置** 等选项
 
 + 由于部分网站获取js文件时的MIME是 `text/plain` 而不是 `text/javascript`，因此只能使用本地加载的方法来使用
-+ 例如在脚本设置 `自定义源` 中把 `BLUL根目录` 设置成 `https://raw.githubusercontent.com/SeaLoong/BLUL/master/src` 会导致不能加载，但在 `//@resource` 中加入各个模块的Github链接是可以正常加载的
++ 例如在脚本设置 `自定义源` 中把 `BLUL根目录` 设置成 `https://raw.githubusercontent.com/SeaLoong/BLUL/dist` 会导致不能加载，但在 `//@resource` 中加入各个模块的Github链接是可以正常加载的
 
 -----------------------------------------
 
