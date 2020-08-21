@@ -190,7 +190,7 @@ function copy (src, dst) {
 }
 
 (async function () {
-  if (!fs.existsSync('./dist')) fs.mkdirSync('./dist');
+  copy('./src', './dist');
 
   const replaceGithub = createReplaceFn('https://raw.githubusercontent.com/SeaLoong/BLUL/dist', 'github');
   let dist = await processMeta('./meta.js', replaceGithub);
@@ -205,6 +205,4 @@ function copy (src, dst) {
 
   dist = await processMeta('./meta.js', replaceJsdelivr, true);
   fs.writeFileSync('./dist/meta.jsdelivr.js', wrap(dist[0], dist[1]));
-
-  copy('./src/modules', './dist/modules');
 })();
