@@ -8,7 +8,15 @@ B站直播区用户脚本库
 
 ## **安装**
 
-在你的用户脚本元信息中加入以下 **元信息** ：
+如果你会修改使用我写的 `build.js` ，只需要在你的 **元信息** 中加入
+
+```javascript
+// @require      https://raw.githubusercontent.com/SeaLoong/BLUL/dist/require.github.js
+```
+
+即可，然后用 node.js 跑一下 `build.js` 就能生成能直接使用的脚本。
+
+否则请在你的用户脚本元信息中加入以下 **元信息** ：
 
 ```javascript
 // @include      /^https?:\/\/live\.bilibili\.com\/(blanc\/)?\d+.*$/
@@ -27,7 +35,7 @@ B站直播区用户脚本库
 // @grant        GM.unregisterMenuCommand
 // @run-at       document-start
 // @license      MIT License
-// @require      https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/dist/require.js
+// @require      https://raw.githubusercontent.com/SeaLoong/BLUL/dist/require.github.js
 ```
 
 如果因网络不畅等原因导致不能正常加载，你可以使用 **本地加载** 的方式。只需要再加入以下 **元信息** ：
@@ -37,17 +45,17 @@ B站直播区用户脚本库
 // @resource     lodash https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.19/lodash.min.js
 // @resource     toastr https://cdn.bootcdn.net/ajax/libs/toastr.js/2.1.4/toastr.min.js
 // @resource     spark-md5 https://cdn.bootcdn.net/ajax/libs/spark-md5/3.0.0/spark-md5.min.js
-// @resource     Toast https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/toast.js
-// @resource     Util https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/util.js
-// @resource     Dialog https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/dialog.js
-// @resource     Page https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/page.js
-// @resource     Logger https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/logger.js
-// @resource     Config https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/config.js
-// @resource     Request https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/request.js
-// @resource     Worker https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/worker.js
-// @resource     Worker/env https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/worker/env.js
-// @resource     Worker/channel https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/worker/channel.js
-// @resource     AppToken https://cdn.jsdelivr.net/gh/SeaLoong/BLUL/src/modules/apptoken.js
+// @resource     Toast https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/toast.js
+// @resource     Util https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/util.js
+// @resource     Dialog https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/dialog.js
+// @resource     Page https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/page.js
+// @resource     Logger https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/logger.js
+// @resource     Config https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/config.js
+// @resource     Request https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/request.js
+// @resource     Worker https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/worker.js
+// @resource     Worker/env https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/worker/env.js
+// @resource     Worker/channel https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/worker/channel.js
+// @resource     AppToken https://raw.githubusercontent.com/SeaLoong/BLUL/master/src/modules/apptoken.js
 ```
 
 然后启用脚本并打开受支持的页面，你应当会看到在偏右上方有 **弹幕**、**日志**、**设置** 等选项
