@@ -28,11 +28,12 @@ jobs:
 
     - run: npm ci
     - run: npm run build --if-present
+    - run: rm .gitignore
 
     - name: Git Auto Commit
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        file_pattern: ./dist/*.js
+        branch: dist
         commit_message: Automatic commit the generated files
         commit_options: '--no-verify --signoff'
         push_options: '--force'
