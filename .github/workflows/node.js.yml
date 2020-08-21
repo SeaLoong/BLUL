@@ -32,6 +32,7 @@ jobs:
     - name: Git Auto Commit
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
+        file_pattern: ./dist/*.js
         commit_message: Automatic commit the generated files
         commit_options: '--no-verify --signoff'
         push_options: '--force'
