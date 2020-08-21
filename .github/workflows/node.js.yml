@@ -26,13 +26,20 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - run: npm ci
-    - run: npm run build --if-present
+    - name: Setup
+      run: npm ci
+
+    - name: Run build.js
+      run: npm run build --if-present
 
     - name: Git Auto Commit
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        branch: dist
-        commit_message: Automatic commit the generated files
-        commit_options: '--no-verify --signoff'
-        push_options: '--force'
+      run: |
+        cd dist
+        git init
+        git config user.name="GitHub Actions"
+        git config user.email="actions@github.com"
+        git remote add origin https://github.com/${{ github.repository }}.git
+        git checkout --orphan dist
+        git add --all
+        git commit --allow-empty -m "Github Actions Auto Commit" --no-verify --author="${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
+        git push origin dist --force
