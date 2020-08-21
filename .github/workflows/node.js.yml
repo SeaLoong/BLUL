@@ -32,7 +32,6 @@ jobs:
     - name: Git Auto Commit
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        branch: dist
         commit_message: Automatic commit the generated files
         commit_options: '--no-verify --signoff'
         push_options: '--force'
