@@ -6,8 +6,6 @@ name: Automatic Build
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   build:
@@ -32,8 +30,9 @@ jobs:
     - run: npm run build --if-present
 
     - name: Git Auto Commit
-      uses: stefanzweifel/git-auto-commit-action@v4.3.0
+      uses: stefanzweifel/git-auto-commit-action@v4
       with:
+        branch: dist
         commit_message: Automatic commit the generated files
         commit_options: '--no-verify --signoff'
         push_options: '--force'
