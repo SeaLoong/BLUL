@@ -38,8 +38,8 @@ jobs:
         git init
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
-        git remote add origin "https://github.com/${{ github.repository }}.git"
+        git remote add origin "https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
         git checkout --orphan dist
         git add --all
-        git commit --allow-empty -m "Github Actions Auto Commit" --no-verify --author="${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
+        git commit --allow-empty -m "Github Actions Auto Commit" --no-verify --author="${GITHUB_ACTOR} <${GITHUB_ACTOR}@users.noreply.github.com>"
         git push origin dist --force
