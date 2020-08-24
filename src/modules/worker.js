@@ -47,10 +47,14 @@ export default async function (importModule, BLUL, GM) {
 
   BLUL.Worker = {
     importModule: async (name) => {
-      if (!channel) {
-        await init();
+      try {
+        if (!channel) {
+          await init();
+        }
+        return channel.postIMPORT(name);
+      } catch (error) {
+        BLUL.Logger.error(`通过Worker加载模块 ${name} 失败`, error);
       }
-      return channel.postIMPORT(name);
     }
   };
 
