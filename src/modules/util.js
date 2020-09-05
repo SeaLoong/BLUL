@@ -111,7 +111,7 @@ function beforeNow (ts, range = 86400e3, offset = 60e3) {
 
 function isToday (ts) {
   const d = new Date();
-  const offset = d.getTimezoneOffset() + 480;
+  const offset = -(d.getTimezoneOffset() + 480);
   d.setMinutes(d.getMinutes() + offset);
   const t = new Date(ts);
   t.setMinutes(t.getMinutes() + offset);
@@ -123,7 +123,7 @@ function isToday (ts) {
 function atTime (ts, hours = 0, min = 1, sec = 0, ms = 0) {
   ts = ts ?? Date.now();
   const t = new Date(ts);
-  t.setHours(hours, min + t.getTimezoneOffset() + 480, sec, ms);
+  t.setHours(hours, min - t.getTimezoneOffset() - 480, sec, ms);
   if (t < ts) {
     t.setDate(t.getDate() + 1);
   }
