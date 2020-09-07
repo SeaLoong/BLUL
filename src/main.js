@@ -14,14 +14,24 @@ var BLUL;
     window.safeWindow = safeWindow;
   }
 
-  if (window.BLUL) {
-    console.warn('[BLUL]检测到BLUL已存在，本脚本将不再初始化BLUL，脚本行为可能会出现异常');
-    BLUL = window.BLUL;
+  if (window.top.BLUL) {
+    // console.warn('[BLUL]检测到BLUL已存在，本脚本将不再初始化BLUL，脚本行为可能会出现异常');
+    BLUL = new Proxy(window.top.BLUL, {
+      has: function (target, property) {
+        if (property === 'isChild') return true;
+        return property in target;
+      },
+      get: function (target, property, receiver) {
+        if (property === 'isChild') return true;
+        return target[property];
+      }
+    });
     return;
   }
-  BLUL = window.BLUL = {
+  BLUL = {
     debug: () => {},
     NAME: 'BLUL',
+    GM: GM,
     ENVIRONMENT: GM.info.scriptHandler,
     ENVIRONMENT_VERSION: GM.info.version,
     VERSION: GM.info.script.version,
@@ -149,18 +159,16 @@ var BLUL;
 
   let hasRun = false;
   BLUL.run = async (options) => {
-    if (hasRun) return true;
+    if (hasRun) return 2;
     hasRun = true;
-    const { debug, slient, loadInSpecial, unique, login, EULA, EULA_VERSION, NOTICE } = options ?? {};
+    const { debug, slient, unique, login, EULA, EULA_VERSION, NOTICE } = options ?? {};
     if (debug) {
       BLUL.debug = console.debug;
-      BLUL.GM = GM;
       BLUL.debug(BLUL);
     }
-    window.top[BLUL.NAME] = BLUL;
 
     // 特殊直播间页面，如 6 55 76
-    if (!loadInSpecial && document.getElementById('player-ctnr')) return false;
+    if (!document.getElementById('aside-area-vm')) return 1;
 
     const resetResourceMenuCmdId = await GM.registerMenuCommand?.('恢复默认源', async () => {
       await GM.setValue('resetResource', true);
@@ -199,7 +207,7 @@ var BLUL;
           BLUL.Toast.warn('已经有其他页面正在运行脚本了哟~');
         }
         await unregisterMenuCmd();
-        return false;
+        return 2;
       }
       // 标记运行中
       await GM.setValue(mark, Date.now());
@@ -214,7 +222,7 @@ var BLUL;
     await importModule('lodash'); /* global _ */
     const Util = BLUL.Util = await importModule('Util');
 
-    await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.__statisObserver);
+    await Util.callUntilTrue(() => window.BilibiliLive?.UID && window.BilibiliLive?.ROOMID && window.BilibiliLive?.ANCHOR_UID && window.BilibiliLive?.SHORT_ROOMID && window.__statisObserver);
 
     if (login) {
       BLUL.INFO.CSRF = Util.getCookie('bili_jct');
@@ -223,7 +231,7 @@ var BLUL;
           BLUL.Toast.warn('你还没有登录呢~');
         }
         await unregisterMenuCmd();
-        return false;
+        return 3;
       }
     }
     await importModule('Dialog');
@@ -238,7 +246,7 @@ var BLUL;
         dialog.addButton('我拒绝', () => dialog.close(false), 1);
         if (!await dialog.show()) {
           await unregisterMenuCmd();
-          return false;
+          return 4;
         }
         await GM.setValue('eula', true);
         await GM.setValue('eulaVersion', EULA_VERSION);
@@ -300,6 +308,8 @@ var BLUL;
     BLUL.oninit = callHandler;
     BLUL.onpostinit = callHandler;
     BLUL.onrun = callHandler;
-    return true;
+
+    window.top[BLUL.NAME] = window.top.BLUL = BLUL;
+    return 0;
   };
 })();
