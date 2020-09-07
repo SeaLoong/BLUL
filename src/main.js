@@ -222,7 +222,7 @@ var BLUL;
     await importModule('lodash'); /* global _ */
     const Util = BLUL.Util = await importModule('Util');
 
-    await Util.callUntilTrue(() => window.BilibiliLive?.UID && window.BilibiliLive?.ROOMID && window.BilibiliLive?.ANCHOR_UID && window.BilibiliLive?.SHORT_ROOMID && window.__statisObserver);
+    await Util.callUntilTrue(() => window.BilibiliLive?.ROOMID && window.BilibiliLive?.ANCHOR_UID && window.BilibiliLive?.SHORT_ROOMID && window.__statisObserver);
 
     if (login) {
       BLUL.INFO.CSRF = Util.getCookie('bili_jct');
@@ -233,6 +233,7 @@ var BLUL;
         await unregisterMenuCmd();
         return 3;
       }
+      await Util.callUntilTrue(() => window.BilibiliLive?.UID);
     }
     await importModule('Dialog');
 
