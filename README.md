@@ -72,7 +72,7 @@ B站直播区用户脚本库
 
 然后启用脚本并打开受支持的页面，你应当会看到在偏右上方有 **弹幕**、**日志**、**设置** 等选项
 
-+ 由于部分网站获取js文件时的MIME是 `text/plain` 而不是 `text/javascript`，因此只能使用本地加载的方法来使用
++ 如果使用 `import` 加载脚本代码，由于部分网站获取js文件时的MIME是 `text/plain` 而不是 `text/javascript`，因此只能使用本地加载的方法来使用
 + 例如在脚本设置 `自定义源` 中把 `BLUL根目录` 设置成 `https://raw.githubusercontent.com/SeaLoong/BLUL/dist` 会导致不能加载，但在 `//@resource` 中加入各个模块的Github链接是可以正常加载的
 
 -----------------------------------------
@@ -85,7 +85,7 @@ B站直播区用户脚本库
 (async function () {
   BLUL.NAME = 'BLRHH';
   // 设置自己脚本的根目录，如果是本地模式则可以不设置
-  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/Bilibili-LRHH@dev/src');
+  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/BLRHH@master/dist');
   // 加载自己的模块
   const importModule = BLUL.importModule;
   importModule('MyModule'); // 此时返回值无意义
@@ -117,7 +117,7 @@ B站直播区用户脚本库
     return;
   }
   // 设置自己脚本的根目录，如果是本地模式则可以不设置
-  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/Bilibili-LRHH@dev/src');
+  BLUL.setBase('https://cdn.jsdelivr.net/gh/SeaLoong/BLRHH@master/dist');
   // 加载自己的模块
   const importModule = BLUL.importModule;
   importModule('MyModule'); // 你可以加上 await 保证先后顺序，因为现在这是一个异步函数，此时返回值为模块返回的内容
@@ -252,6 +252,46 @@ BLUL.INFO.VISIT_ID;
 + 返回
 
 > ***(number)***: 0: 成功加载; 1: 无法注入的页面; 2: 重复运行; 3: 未登录; 4: 未同意EULA。
+
+-----------------------------------------
+
+### **AppToken**
+
+#### `BLUL.AppToken.headers(params)`
+
+生成表单数据并且带签名。
+
++ 参数
+
+> **params** ***(Object)***: 数据。
+
++ 返回
+
+> ***(string)***: 签名后的表单数据。
+
+#### `BLUL.AppToken.getNewAccessToken()`
+
+获取新的 access_token 和 refresh_token ，并保存到设置中。失败返回 undefined。
+
++ 返回
+
+> ***(string)***: access_token。
+
+#### `BLUL.AppToken.refreshAccessToken()`
+
+使用 refresh_token 来获取新的 access_token ，并保存到设置中。失败返回 undefined。
+
++ 返回
+
+> ***(string)***: access_token。
+
+#### `BLUL.AppToken.getAccessToken()`
+
+获取 access_token 和 refresh_token 。如果没有有效的 access_token 则自动获取新的 access_token 。失败返回 undefined。
+
++ 返回
+
+> ***(string)***: access_token。
 
 -----------------------------------------
 

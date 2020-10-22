@@ -124,9 +124,9 @@ export default async function (importModule, BLUL, GM) {
       await Util.sleep(800);
       obj = await qrcode.poll(auth_code);
       if (obj.code === 0) {
-        config.access_token = obj?.data?.access_token ?? config.access_token;
-        config.refresh_token = obj?.data?.refresh_token ?? config.refresh_token;
-        config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
+        config.access_token = obj?.data?.access_token;
+        config.refresh_token = obj?.data?.refresh_token;
+        config.ts = Date.now() + (obj?.data?.expires_in ?? 864000) * 500;
         await BLUL.Config.set('appToken.access_token', config.access_token);
         await BLUL.Config.set('appToken.refresh_token', config.refresh_token);
         await BLUL.Config.set('appToken.ts', config.ts);
@@ -136,31 +136,38 @@ export default async function (importModule, BLUL, GM) {
     }
   }
 
+  async function refreshAccessToken () {
+    BLUL.debug(NAME, 'refreshAccessToken');
+    const obj = await oauth2.refresh_token(config.access_token, config.refresh_token);
+    if (obj.code === 0 && obj.data?.status === 0) {
+      const token_info = obj.data.token_info;
+      config.access_token = token_info.access_token;
+      config.refresh_token = token_info.refresh_token;
+      config.ts = Date.now() + (token_info.expires_in ?? 864000) * 500;
+      await BLUL.Config.set('appToken.access_token', config.access_token);
+      await BLUL.Config.set('appToken.refresh_token', config.refresh_token);
+      await BLUL.Config.set('appToken.ts', config.ts);
+      await BLUL.Config.save();
+      return config.access_token;
+    }
+  }
+
   async function getAccessToken () {
     BLUL.debug(NAME, 'getAccessToken');
     if (config.access_token) {
       if (Date.now() < config.ts) return config.access_token;
-      let obj = await oauth2.info(config.access_token);
+      const obj = await oauth2.info(config.access_token);
       if (obj.code === 0) {
-        config.access_token = obj?.data?.access_token ?? config.access_token;
-        config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
+        config.access_token = obj?.data?.access_token;
+        config.ts = Date.now() + (obj?.data?.expires_in ?? 864000) * 500;
         await BLUL.Config.set('appToken.access_token', config.access_token);
         await BLUL.Config.set('appToken.ts', config.ts);
         await BLUL.Config.save();
         return config.access_token;
       }
       if (config.refresh_token) {
-        obj = await oauth2.refresh_token(config.access_token, config.refresh_token);
-        if (obj.code === 0) {
-          config.access_token = obj?.data?.access_token ?? config.access_token;
-          config.refresh_token = obj?.data?.refresh_token ?? config.refresh_token;
-          config.ts = Date.now() + (obj?.data?.expires_in ?? 86400) * 1e3;
-          await BLUL.Config.set('appToken.access_token', config.access_token);
-          await BLUL.Config.set('appToken.refresh_token', config.refresh_token);
-          await BLUL.Config.set('appToken.ts', config.ts);
-          await BLUL.Config.save();
-          return config.access_token;
-        }
+        const token = refreshAccessToken();
+        if (token) return token;
       }
     }
     return getNewAccessToken();
@@ -209,11 +216,9 @@ export default async function (importModule, BLUL, GM) {
   });
 
   BLUL.AppToken = {
-    get headers () {
-      return headers;
-    },
     sign,
     getNewAccessToken,
+    refreshAccessToken,
     getAccessToken
   };
 

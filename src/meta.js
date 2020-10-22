@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          BLUL
 // @namespace     SeaLoong
-// @version       1.0.1
+// @version       1.0.2
 // @description   Bilibili Live Userscript Library
 // @author        SeaLoong
 // @homepageURL   https://github.com/SeaLoong/BLUL
