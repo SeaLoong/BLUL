@@ -166,7 +166,7 @@ export default async function (importModule, BLUL, GM) {
         return config.access_token;
       }
       if (config.refresh_token) {
-        const token = refreshAccessToken();
+        const token = await refreshAccessToken();
         if (token) return token;
       }
     }
