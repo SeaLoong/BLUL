@@ -6,7 +6,7 @@
   url: 'https://example.com',
   search: {}, // 查询字符串
   headers: {},
-  data: {} // POST用，fetch下会自动转换为 URLSearchParam ，monkeyx想类型取决于 Content-type
+  data: {} // POST用，类型取决于 Content-Type，对于表单和JSON会自动转换成有效的字符串
   /// 剩余参数取决于所选择的实现
 }
  */
@@ -33,10 +33,17 @@ export default async function (importModule, BLUL, GM) {
       fetch: true
     });
     if (!_.isEmpty(details.search)) {
-      details.url += '?' + Util.toURLSearchParamString(details.search);
+      details.url = new URL(details.url);
+      details.url.search = Util.toURLSearchParamString(details.search);
+      details.url = details.url.toString();
     }
     if (details.method === 'POST' && !_.isEmpty(details.data)) {
       _.defaultsDeep(details, { headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' } });
+      if (details.headers?.['content-type']?.includes('application/x-www-form-urlencoded')) {
+        details.data = Util.toURLSearchParamString(details.data);
+      } else if (details.headers?.['content-type']?.includes('application/json')) {
+        details.data = JSON.stringify(details.data);
+      }
     }
     const responseType = details.responseType;
     // eslint-disable-next-line no-unmodified-loop-condition
@@ -91,12 +98,16 @@ export default async function (importModule, BLUL, GM) {
       referrer: ''
     });
     if (!_.isEmpty(init.search)) {
-      init.url += '?' + Util.toURLSearchParamString(init.search);
+      init.url = new URL(init.url);
+      init.url.search = Util.toURLSearchParamString(init.search);
+      init.url = init.url.toString();
     }
     if (init.method === 'POST' && !_.isEmpty(init.data)) {
       _.defaultsDeep(init, { headers: { 'content-type': 'application/x-www-form-urlencoded; charset=utf-8' } });
       if (init.headers?.['content-type']?.includes('application/x-www-form-urlencoded')) {
         init.body = Util.toURLSearchParamString(init.data);
+      } else if (init.headers?.['content-type']?.includes('application/json')) {
+        init.body = JSON.stringify(init.data);
       } else {
         init.body = init.data;
       }
