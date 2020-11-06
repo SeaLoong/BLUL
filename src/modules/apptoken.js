@@ -114,11 +114,17 @@ export default async function (importModule, BLUL, GM) {
   async function getNewAccessToken () {
     BLUL.debug(NAME, 'getNewAccessToken');
     let obj = await qrcode.auth_code();
-    if (obj.code !== 0) return;
+    if (obj.code !== 0) {
+      BLUL.Logger.error(`获取新accessToken失败(code=${obj.code})`, obj.message);
+      return;
+    }
     // obj.data.url 可用于生成二维码扫码登录，等同于完成了下面这一步
     const auth_code = obj.data.auth_code;
     obj = await qrcode.confirm(auth_code, BLUL.INFO.CSRF);
-    if (obj.code !== 0) return;
+    if (obj.code !== 0) {
+      BLUL.Logger.error(`获取新accessToken失败(code=${obj.code})`, obj.message);
+      return;
+    }
     let cnt = 5;
     while (cnt--) {
       await Util.sleep(800);
@@ -134,6 +140,7 @@ export default async function (importModule, BLUL, GM) {
         return config.access_token;
       }
     }
+    BLUL.Logger.error(`获取新accessToken失败(code=${obj.code})`, obj.message);
   }
 
   async function refreshAccessToken () {
