@@ -37,7 +37,8 @@ var BLUL;
     VERSION: GM.info.script.version,
     RESOURCE: {},
     BLUL_MODULE_NAMES: ['Toast', 'Util', 'Dialog', 'Page', 'Logger', 'Config', 'Request', 'Worker', 'Worker/env', 'Worker/channel', 'AppToken'],
-    INFO: {}
+    INFO: {},
+    TRACKED_LISTENERS: {}
   };
 
   BLUL.lazyFn = function (...args) {
@@ -157,6 +158,61 @@ var BLUL;
     if (resource[name]?.__VALUE__) BLUL.RESOURCE[name] = resource[name]?.__VALUE__;
   };
 
+  const listenerFilters = {};
+  BLUL.addListenerFilter = (type, f) => {
+    if (!(listenerFilters[type] instanceof Array)) listenerFilters[type] = [];
+    listenerFilters[type].push(f);
+  };
+
+  BLUL.removeListenerFilter = (type, f) => {
+    if (listenerFilters[type] instanceof Array) {
+      for (let i = 0; i < listenerFilters[type].length; i++) {
+        if (listenerFilters[type][i] === f) {
+          listenerFilters[type].splice(i, 1);
+          break;
+        }
+      }
+    }
+  };
+
+  const addEventListener = EventTarget.prototype.addEventListener;
+  EventTarget.prototype.addEventListener = function (type, listener, ...args) {
+    if (listenerFilters[type] instanceof Array) {
+      let allow = true;
+      for (const f of listenerFilters[type]) {
+        allow &= f.call(this, type, listener, ...args);
+        if (!allow) return;
+      }
+    }
+    if (!(BLUL.TRACKED_LISTENERS[type] instanceof Array)) BLUL.TRACKED_LISTENERS[type] = [];
+    BLUL.TRACKED_LISTENERS[type].push({ target: this, listener, args });
+    addEventListener.call(this, type, listener, ...args);
+  };
+
+  const removeEventListener = EventTarget.prototype.removeEventListener;
+  EventTarget.prototype.removeEventListener = function (type, listener, ...args) {
+    if (BLUL.TRACKED_LISTENERS[type] instanceof Array) {
+      for (let i = 0; i < BLUL.TRACKED_LISTENERS[type].length; i++) {
+        const o = BLUL.TRACKED_LISTENERS[type][i];
+        if (o.target === this && o.listener === listener) {
+          BLUL.TRACKED_LISTENERS[type].splice(i, 1);
+          break;
+        }
+      }
+    }
+    removeEventListener.call(this, type, listener, ...args);
+  };
+
+  BLUL.removeAllListener = (type, rejectType = true) => {
+    if (rejectType) {
+      listenerFilters[type] = [t => type !== t];
+    }
+    for (const o of BLUL.TRACKED_LISTENERS[type]) {
+      removeEventListener.call(o.target, type, o.listener, ...o.args);
+    }
+    BLUL.TRACKED_LISTENERS[type] = null;
+  };
+
   let hasRun = false;
   BLUL.run = async (options) => {
     if (hasRun) return 2;
@@ -166,6 +222,11 @@ var BLUL;
       BLUL.debug = console.debug;
       BLUL.debug(BLUL);
     }
+
+    // 等待load事件
+    await new Promise(resolve => {
+      window.addEventListener('load', resolve);
+    });
 
     // 特殊直播间页面，如 6 55 76
     if (!document.getElementById('aside-area-vm')) return 1;
