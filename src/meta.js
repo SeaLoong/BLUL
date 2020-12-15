@@ -21,7 +21,7 @@
 // @grant         GM.getResourceText
 // @grant         GM.registerMenuCommand
 // @grant         GM.unregisterMenuCommand
-// @run-at        document-start
+// @run-at        document-idle
 // @license       MIT License
 // @incompatible  chrome 不支持内核低于80的版本
 // @incompatible  firefox 不支持内核低于72的版本
