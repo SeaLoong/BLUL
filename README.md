@@ -195,6 +195,7 @@ BLUL.INFO.ROOMID;
 BLUL.INFO.ANCHOR_UID;
 BLUL.INFO.SHORT_ROOMID;
 BLUL.INFO.VISIT_ID;
+BLUL.TRACKED_LISTENERS;
 ```
 
 #### `async BLUL.addResource(name, urls, [displayName=name])`
@@ -208,6 +209,36 @@ BLUL.INFO.VISIT_ID;
 > **urls** ***(string|Array)***: URL字符串或可选URL的数组。
 >  
 > **[displayName=name]** ***(string)***: 设置项显示给用户的名称，默认与 `name` 相同。
+
+#### `BLUL.addListenerFilter(type, f)`
+
+增加事件监听器(EventListener)的过滤器，调用方式为 `f(type, listener, ...args)` (与 `addEventListener` 一致)，返回 `true` 表示允许， `false` 表示不允许。
+
++ 参数
+
+> **type** ***(string)***: 事件类型。
+>  
+> **f** ***(Function)***: 过滤函数。
+
+#### `BLUL.removeListenerFilter(type, f)`
+
+移除事件监听器(EventListener)的过滤器。
+
++ 参数
+
+> **type** ***(string)***: 事件类型。
+>  
+> **f** ***(Function)***: 过滤函数。
+
+#### `BLUL.removeAllListener(type, [rejectType=true])`
+
+移除指定事件的所有事件监听器(EventListener)。
+
++ 参数
+
+> **type** ***(string)***: 事件类型。
+>  
+> **[rejectType=true]** ***(boolean)***: 指示是否同时拒绝所有这类事件监听器的增加。
 
 #### `BLUL.setBase(urls)`
 
