@@ -260,6 +260,10 @@ BLUL.TRACKED_LISTENERS;
 
 > ***(\*)***: 模块返回的内容。
 
+#### `BLUL.recover()`
+
+不启用 `BLUL`， 解除所有钩子，置 `BLUL` 为 `undefined` 。
+
 #### `async BLUL.run([options={}])`
 
 + 参数

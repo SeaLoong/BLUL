@@ -213,6 +213,12 @@ var BLUL;
     BLUL.TRACKED_LISTENERS[type] = null;
   };
 
+  BLUL.recover = () => {
+    EventTarget.prototype.addEventListener = addEventListener;
+    EventTarget.prototype.removeEventListener = removeEventListener;
+    BLUL = undefined;
+  };
+
   let hasRun = false;
   BLUL.run = async (options) => {
     if (hasRun) return 2;
