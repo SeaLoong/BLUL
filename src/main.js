@@ -216,7 +216,6 @@ var BLUL;
   BLUL.recover = () => {
     EventTarget.prototype.addEventListener = addEventListener;
     EventTarget.prototype.removeEventListener = removeEventListener;
-    BLUL = undefined;
   };
 
   let hasRun = false;

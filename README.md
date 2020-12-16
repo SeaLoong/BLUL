@@ -262,7 +262,7 @@ BLUL.TRACKED_LISTENERS;
 
 #### `BLUL.recover()`
 
-不启用 `BLUL`， 解除所有钩子，置 `BLUL` 为 `undefined` 。
+解除所有钩子。
 
 #### `async BLUL.run([options={}])`
 
