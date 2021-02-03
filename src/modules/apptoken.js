@@ -223,6 +223,7 @@ export default async function (importModule, BLUL, GM) {
   });
 
   BLUL.AppToken = {
+    headers,
     sign,
     getNewAccessToken,
     refreshAccessToken,
