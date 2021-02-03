@@ -25,12 +25,12 @@ export default async function (importModule, BLUL, GM) {
     _.defaultsDeep(details, {
       method: 'GET',
       headers: {
-        Accept: 'application/json, text/plain, */*'
+        Accept: 'application/json, text/plain, */*',
+        Host: new URL(details.url).host
       },
-      cookie: document.cookie,
       nocache: true,
       responseType: 'json',
-      fetch: true
+      fetch: false
     });
     if (!_.isEmpty(details.search)) {
       details.url = new URL(details.url);
@@ -39,9 +39,9 @@ export default async function (importModule, BLUL, GM) {
     }
     if (details.method === 'POST' && !_.isEmpty(details.data)) {
       _.defaultsDeep(details, { headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' } });
-      if (details.headers?.['content-type']?.includes('application/x-www-form-urlencoded')) {
+      if (details.headers?.['Content-Type']?.includes('application/x-www-form-urlencoded')) {
         details.data = Util.toURLSearchParamString(details.data);
-      } else if (details.headers?.['content-type']?.includes('application/json')) {
+      } else if (details.headers?.['Content-Type']?.includes('application/json')) {
         details.data = JSON.stringify(details.data);
       }
     }
@@ -92,7 +92,8 @@ export default async function (importModule, BLUL, GM) {
     _.defaultsDeep(init, {
       method: 'GET',
       headers: {
-        accept: 'application/json, text/plain, */*'
+        Accept: 'application/json, text/plain, */*',
+        Host: new URL(init.url).host
       },
       credentials: 'include',
       referrer: ''
@@ -103,10 +104,10 @@ export default async function (importModule, BLUL, GM) {
       init.url = init.url.toString();
     }
     if (init.method === 'POST' && !_.isEmpty(init.data)) {
-      _.defaultsDeep(init, { headers: { 'content-type': 'application/x-www-form-urlencoded; charset=utf-8' } });
-      if (init.headers?.['content-type']?.includes('application/x-www-form-urlencoded')) {
+      _.defaultsDeep(init, { headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' } });
+      if (init.headers?.['Content-Type']?.includes('application/x-www-form-urlencoded')) {
         init.body = Util.toURLSearchParamString(init.data);
-      } else if (init.headers?.['content-type']?.includes('application/json')) {
+      } else if (init.headers?.['Content-Type']?.includes('application/json')) {
         init.body = JSON.stringify(init.data);
       } else {
         init.body = init.data;
